@@ -1,34 +1,30 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.IO;
-#if UNITY_EDITOR
 using UnityEngine;
-#endif
 using UnityEditor;
-
 
 namespace Breakdawn
 {
 	public class AutoExportAssetPackage
 	{
-		public const string ASSET_PATH_NAME = "Assets/BreakdawnCore";
-		public static readonly string ROOT_PATH = $"{Path.Combine(Application.dataPath, "../")}";
+		public const string AssetPathName = "Assets/BreakdawnCore";
+		public static readonly string RootPath = $"{Path.Combine(Application.dataPath, "../")}";
 
-#if UNITY_EDITOR
 		[MenuItem("Breakdawn/导出Asset Package %e")]
 		private static void LableDoExport()
 		{
 			Export();
 		}
-#endif
 		/// <summary>
 		/// 导出资源包,默认Assets/BreakdawnCore路径
 		/// </summary>
 		public static void Export()
 		{
 			var fileName = $"BreakdawnCore{DateTime.Now:yyyyMMdd_HHmmss}.unitypackage";
-			AssetDatabase.ExportPackage(ASSET_PATH_NAME, fileName, ExportPackageOptions.Recurse);
-			MoveFile(ROOT_PATH, fileName);
-			Application.OpenURL($"file://{ROOT_PATH}/Build");
+			AssetDatabase.ExportPackage(AssetPathName, fileName, ExportPackageOptions.Recurse);
+			MoveFile(RootPath, fileName);
+			Application.OpenURL($"file://{RootPath}/Build");
 		}
 		/// <summary>
 		/// 导出资源包
@@ -38,8 +34,8 @@ namespace Breakdawn
 		{
 			var fileName = $"BreakdawnCore{DateTime.Now:yyyyMMdd_HHmmss}.unitypackage";
 			AssetDatabase.ExportPackage(path, fileName, ExportPackageOptions.Recurse);
-			MoveFile(ROOT_PATH, fileName);
-			Application.OpenURL($"file://{ROOT_PATH}/Build");
+			MoveFile(RootPath, fileName);
+			Application.OpenURL($"file://{RootPath}/Build");
 		}
 
 		private static void MoveFile(string rootPath, string fileName)
@@ -53,3 +49,4 @@ namespace Breakdawn
 		}
 	}
 }
+#endif
