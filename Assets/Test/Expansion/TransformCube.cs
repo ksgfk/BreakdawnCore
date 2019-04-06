@@ -11,5 +11,11 @@ namespace Breakdawn
 		{
 			transform.SetLocalPos(0, 2, 0);
 		}
+
+		private void Update()
+		{
+			//Debug.Log($"{Probability.Percent(Precision.Super, 25)}");
+			//Debug.Log($"{Probability.Percent(100,50)}");
+		}
 	}
 }
