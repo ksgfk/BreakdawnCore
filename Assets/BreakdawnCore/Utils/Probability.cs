@@ -1,7 +1,27 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
 namespace Breakdawn.Utils
 {
+	public enum Precision
+	{
+		/// <summary>
+		/// 最高
+		/// </summary>
+		Super,
+		/// <summary>
+		/// 最高-1
+		/// </summary>
+		Lighting,
+		VeryHigh,
+		High,
+		Medium,
+		Low,
+		VeryLow
+	}
+
 	public static class Probability
 	{
 		/// <summary>
@@ -78,22 +98,98 @@ namespace Breakdawn.Utils
 			}
 			return p;
 		}
-	}
-
-	public enum Precision
-	{
 		/// <summary>
-		/// 最高
+		/// 获取数组中随机元素
 		/// </summary>
-		Super,
+		/// <param name="count">数量</param>
+		/// <returns>随机的元素数组</returns>
+		public static IList<T> GetRandomElements<T>(IList<T> t, int count)
+		{
+			if (count >= t.Count)
+			{
+				Debug.LogWarning($"想随机的数量({count})比数组内含有的个数({t.Count})多");
+				return t;
+			}
+			var arr = new T[count];
+			var selected = GetRandomNumbers(0, t.Count, count);
+			for (int i = 0; i < selected.Count; i++)
+			{
+				arr[i] = t[selected[i]];
+			}
+			return arr;
+		}
 		/// <summary>
-		/// 最高-1
+		/// 获取字典中随机元素
 		/// </summary>
-		Lighting,
-		VeryHigh,
-		High,
-		Medium,
-		Low,
-		VeryLow
+		/// <param name="count">数量</param>
+		/// <returns>随机的元素数组</returns>
+		public static IList<V> GetRandomElements<K, V>(IDictionary<K, V> dict, int count)//好像写了一堆辣鸡
+		{
+			if (count >= dict.Count)
+			{
+				Debug.LogWarning($"想随机的数量({count})比数组内含有的个数({dict.Count})多");
+				var par = from v in dict select v.Value;
+				return par.ToArray();
+			}
+			var vs = from v in dict select v.Value;
+			var val = vs.ToArray();
+			var arr = new V[count];
+			var selected = GetRandomNumbers(0, dict.Count, count);
+			for (int a = 0; a < count; a++)
+			{
+				arr[a] = val[selected[a]];
+			}
+			return arr.ToArray();
+		}
+		/// <summary>
+		/// 获取随机数字
+		/// </summary>
+		/// <param name="min">数字最小值</param>
+		/// <param name="max">数字最大值</param>
+		/// <param name="count">数量</param>
+		/// <returns>随机的数字数组</returns>
+		public static IList<int> GetRandomNumbers(int min, int max, int count)
+		{
+			var result = new List<int>();
+			for (int i = 0; i < count; i++)
+			{
+				var a = Random.Range(min, max);
+				if (i == 0)
+					result.Add(a);
+				else
+				{
+					if (result.Contains(a))
+						i -= 1;
+					else
+						result.Add(a);
+				}
+			}
+			return result;
+		}
+		/// <summary>
+		/// 获取随机数字
+		/// </summary>
+		/// <param name="min">数字最小值</param>
+		/// <param name="max">数字最大值</param>
+		/// <param name="count">数量</param>
+		/// <returns>随机的数字数组</returns>
+		public static IList<float> GetRandomNumbers(float min, float max, int count)
+		{
+			var result = new List<float>();
+			for (int i = 0; i < count; i++)
+			{
+				var a = Random.Range(min, max);
+				if (i == 0)
+					result.Add(a);
+				else
+				{
+					if (result.Contains(a))
+						i -= 1;
+					else
+						result.Add(a);
+				}
+			}
+			return result;
+		}
 	}
 }
