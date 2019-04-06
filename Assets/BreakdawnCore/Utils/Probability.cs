@@ -1,7 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace Breakdawn.Utils
 {
@@ -49,7 +50,7 @@ namespace Breakdawn.Utils
 			return ran < percent;
 		}
 
-		public static bool Percent(Precision precision, float percent)//闲的蛋疼
+		public static bool Percent(float percent, Precision precision)//闲的蛋疼
 		{
 			if (percent < 0 || percent > 100)
 				Debug.LogWarning($"概率:{percent}永远返回true或false");
@@ -58,7 +59,7 @@ namespace Breakdawn.Utils
 			return ran < percent * p;
 		}
 
-		public static bool Percent(Precision precision, float percent, out float ran)
+		public static bool Percent(float percent, out float ran, Precision precision)
 		{
 			if (percent < 0 || percent > 100)
 				Debug.LogWarning($"概率:{percent}永远返回true或false");
@@ -103,18 +104,18 @@ namespace Breakdawn.Utils
 		/// </summary>
 		/// <param name="count">数量</param>
 		/// <returns>随机的元素数组</returns>
-		public static IList<T> GetRandomElements<T>(IList<T> t, int count)
+		public static IList<T> GetRandomElements<T>(IList<T> list, int count)
 		{
-			if (count >= t.Count)
+			if (count >= list.Count)
 			{
-				Debug.LogWarning($"想随机的数量({count})比数组内含有的个数({t.Count})多");
-				return t;
+				Debug.LogWarning($"想随机的数量({count})比数组内含有的个数({list.Count})多");
+				return list;
 			}
 			var arr = new T[count];
-			var selected = GetRandomNumbers(0, t.Count, count);
+			var selected = GetRandomNumbers(0, list.Count, count);
 			for (int i = 0; i < selected.Count; i++)
 			{
-				arr[i] = t[selected[i]];
+				arr[i] = list[selected[i]];
 			}
 			return arr;
 		}
@@ -150,21 +151,52 @@ namespace Breakdawn.Utils
 		/// <returns>随机的数字数组</returns>
 		public static IList<int> GetRandomNumbers(int min, int max, int count)
 		{
-			var result = new List<int>();
-			for (int i = 0; i < count; i++)
+			//Stopwatch sw = new Stopwatch();
+			//sw.Start();
+			int t;
+			var res = new List<int>();
+			if (count > (max - min) / 2)
 			{
-				var a = Random.Range(min, max);
-				if (i == 0)
-					result.Add(a);
-				else
+				var del = new List<int>(count);
+				t = max - min - count;
+				for (int i = min; i < max; i++)
+					res.Add(i);
+				for (int i = 0; i < t; i++)
 				{
-					if (result.Contains(a))
-						i -= 1;
+					var a = Random.Range(min, max);
+					if (i == 0)
+						del.Add(a);
 					else
-						result.Add(a);
+					{
+						if (del.Contains(a))
+							i -= 1;
+						else
+							del.Add(a);
+					}
+				}
+				foreach (var item in del)
+					res.Remove(item);
+			}
+			else
+			{
+				t = count;
+				for (int i = 0; i < t; i++)
+				{
+					var a = Random.Range(min, max);
+					if (i == 0)
+						res.Add(a);
+					else
+					{
+						if (res.Contains(a))
+							i -= 1;
+						else
+							res.Add(a);
+					}
 				}
 			}
-			return result;
+			//sw.Stop();
+			//Debug.Log(sw.ElapsedMilliseconds);
+			return res;
 		}
 		/// <summary>
 		/// 获取随机数字

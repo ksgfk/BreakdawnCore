@@ -24,14 +24,19 @@ namespace Breakdawn
 			//}
 			//Debug.Log($"{yes.Count}/1000000");
 			//Debug.Log($"{no.Count}/1000000");
-			var a = new Vector3[] { Vector3.zero, Vector3.up, new Vector3(1, 2, 3), new Vector3(1, 3, 3), new Vector3(1, 5, 2), new Vector3(1, 1, 3), new Vector3(3, 2, 3) };
-
-			var b = Probability.GetRandomElements(a, 7);
-			//var b = Probability.GetRandomNumbers(0, 6, 4);
-			foreach (var item in b)
+			List<int> c = new List<int>(20000);
+			for (int a = 0; a < 20000; a++)
 			{
-				Debug.Log(item);
+				c.Add(a);
 			}
+
+			var b = Probability.GetRandomElements(c, 18000);
+			//var b = Probability.GetRandomNumbers(0, 6, 4);
+			//foreach (var item in b)
+			//{
+			//	Debug.Log(item);
+			//}
+			Debug.Log(b.Count);
 		}
 	}
 }
