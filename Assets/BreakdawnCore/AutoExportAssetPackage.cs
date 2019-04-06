@@ -21,7 +21,7 @@ namespace Breakdawn
 		/// </summary>
 		public static void Export()
 		{
-			var fileName = $"BreakdawnCore{DateTime.Now:yyyyMMdd_HHmmss}.unitypackage";
+			var fileName = $"BreakdawnCore_{DateTime.Now:yyyyMMdd_HHmmss}.unitypackage";
 			AssetDatabase.ExportPackage(AssetPathName, fileName, ExportPackageOptions.Recurse);
 			MoveFile(RootPath, fileName);
 			Application.OpenURL($"file://{RootPath}/Build");
@@ -32,7 +32,7 @@ namespace Breakdawn
 		/// <param name="path">所有资源的路径</param>
 		public static void Export(params string[] path)
 		{
-			var fileName = $"BreakdawnCore{DateTime.Now:yyyyMMdd_HHmmss}.unitypackage";
+			var fileName = $"BreakdawnCore_{DateTime.Now:yyyyMMdd_HHmmss}.unitypackage";
 			AssetDatabase.ExportPackage(path, fileName, ExportPackageOptions.Recurse);
 			MoveFile(RootPath, fileName);
 			Application.OpenURL($"file://{RootPath}/Build");

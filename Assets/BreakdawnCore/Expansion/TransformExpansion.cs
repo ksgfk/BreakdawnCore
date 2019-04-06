@@ -10,7 +10,7 @@ namespace Breakdawn.Expansion
 		/// <param name="x">x轴</param>
 		/// <param name="y">y轴</param>
 		/// <param name="z">z轴</param>
-		public static void SetLocalPos(this Transform transform, int x, int y, int z)
+		public static void SetLocalPos(this Transform transform, float x, float y, float z)
 		{
 			var pos = transform.localPosition;
 			pos.x = x;
