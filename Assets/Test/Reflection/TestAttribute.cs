@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
-namespace Breakdawn
+namespace Breakdawn.Test
 {
 	[AttributeUsage(AttributeTargets.Class)]
 	public class TestAttribute : Attribute

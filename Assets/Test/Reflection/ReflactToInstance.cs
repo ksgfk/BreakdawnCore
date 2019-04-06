@@ -4,7 +4,7 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Breakdawn
+namespace Breakdawn.Test
 {
 	public class ReflactToInstance : MonoBehaviour
 	{

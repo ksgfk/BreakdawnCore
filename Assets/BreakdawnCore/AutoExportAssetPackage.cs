@@ -12,7 +12,7 @@ namespace Breakdawn
 		public static readonly string RootPath = $"{Path.Combine(Application.dataPath, "../")}";
 
 		[MenuItem("Breakdawn/导出Asset Package %e")]
-		private static void LableDoExport()
+		private static void MenuClicker()
 		{
 			Export();
 		}

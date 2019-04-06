@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Breakdawn
+namespace Breakdawn.Test
 {
 	[Test(1)]
 	public class MyTestClass
