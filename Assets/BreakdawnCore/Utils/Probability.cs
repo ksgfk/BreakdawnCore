@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 
@@ -97,38 +94,23 @@ namespace Breakdawn.Utils
 		/// 获取字典中随机元素
 		/// </summary>
 		/// <param name="count">数量</param>
-		/// <returns>随机的元素数组</returns>
-		public static IList<V> GetRandomElements<K, V>(IDictionary<K, V> dict, int count)
+		/// <returns>随机的元素字典</returns>
+		public static IDictionary<K, V> GetRandomElements<K, V>(IDictionary<K, V> dict, int count)
 		{
-			var par = from v in dict select v.Value;
 			if (count >= dict.Count)
 			{
 				Debug.LogWarning($"想随机的数量({count})比数组内含有的个数({dict.Count})多");
-				return par.ToArray();
+				return dict;
 			}
-			var val = par.ToArray();
-
-			return GetRandomElements(val, count);
-		}
-
-		[Obsolete("这个性能超差")]
-		public static IDictionary<K, V> GetRandomElements<K, V>(IDictionary<K, V> dict, int count, int a = 0)//好像写了一堆辣鸡
-		{
-			Stopwatch sw = new Stopwatch();
-			sw.Start();
-
-			var selected = GetRandomNumbers(0, dict.Count, count);
-			var r = new Dictionary<K, V>();
-			var par = dict.Select((e) => e.Key).ToArray();
-			for (int i = 0; i < count; i++)
+			var result = new Dictionary<K, V>();
+			var keys = dict.Keys.ToArray();
+			var selectedKey = GetRandomElements(keys, count);
+			foreach (var item in selectedKey)
 			{
-				r.Add(par[selected[i]], dict[par[selected[i]]]);
+				result.Add(item, dict[item]);
 			}
 
-			sw.Stop();
-			Debug.LogWarning($"时间花费:{sw.ElapsedMilliseconds}");
-
-			return r;
+			return result;
 		}
 		/// <summary>
 		/// 获取随机数字

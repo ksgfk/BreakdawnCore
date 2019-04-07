@@ -11,17 +11,16 @@ namespace Breakdawn
 	{
 		private void Start()
 		{
-			//var c = new List<int>(20000);
-			//for (int a = 0; a < 20000; a++)
-			//{
-			//	c.Add(a);
-			//}
-
-			//Stopwatch sw = new Stopwatch();
-			//sw.Start();
-			//var b = Probability.GetRandomElements(c, 10000);
-			//sw.Stop();
-			//Debug.Log(sw.ElapsedMilliseconds);
+			var c = new Dictionary<int,int>(20000);
+			for (int a = 0; a < 20000; a++)
+			{
+				c.Add(a, a);
+			}
+			Stopwatch sw = new Stopwatch();
+			sw.Start();
+			var b = Probability.GetRandomElements(c, 10000);
+			sw.Stop();
+			Debug.Log(sw.ElapsedMilliseconds);
 
 			//var b = Probability.GetRandomNumbers(0, 6, 4);
 			//foreach (var item in b)
@@ -35,10 +34,8 @@ namespace Breakdawn
 			//	Debug.Log(item);
 			//}
 
-			var a = Probability.GetRandomNumbers(0, 10, 2);
-			Debug.Log(a.Count);
-
-			var b = Probability.Percent(2, Precision.Super);
+			//var a = Probability.GetRandomNumbers(0, 10, 2);
+			//Debug.Log(a.Count);
 
 			//foreach (var item in a)
 			//{
