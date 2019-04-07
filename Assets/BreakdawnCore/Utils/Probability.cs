@@ -97,7 +97,7 @@ namespace Breakdawn.Utils
 					p = 1;
 					break;
 				default:
-					throw new System.Exception("到底是什么黑魔法");
+					throw new Exception("到底是什么黑魔法");
 			}
 			return p;
 		}
@@ -113,13 +113,17 @@ namespace Breakdawn.Utils
 				Debug.LogWarning($"想随机的数量({count})比数组内含有的个数({list.Count})多");
 				return list;
 			}
-			var arr = new T[count];
-			var selected = GetRandomNumbers(0, list.Count, count);
-			for (int i = 0; i < selected.Count; i++)
+			var result = new List<T>(list.Count);
+			foreach (var item in list)
 			{
-				arr[i] = list[selected[i]];
+				result.Add(item);
 			}
-			return arr;
+			for (int i = 0; i < count; i++)
+			{
+				var ran = Random.Range(0, result.Count());
+				result.RemoveAt(ran);
+			}
+			return result;
 		}
 		/// <summary>
 		/// 获取字典中随机元素
@@ -128,9 +132,6 @@ namespace Breakdawn.Utils
 		/// <returns>随机的元素数组</returns>
 		public static IList<V> GetRandomElements<K, V>(IDictionary<K, V> dict, int count)
 		{
-			//Stopwatch sw = new Stopwatch();
-			//sw.Start();
-
 			var par = from v in dict select v.Value;
 			if (count >= dict.Count)
 			{
@@ -139,18 +140,15 @@ namespace Breakdawn.Utils
 			}
 			var val = par.ToArray();
 
-			//sw.Stop();
-			//Debug.Log(sw.ElapsedMilliseconds);
-
 			return GetRandomElements(val, count);
 		}
 
 		[Obsolete("这个性能超差")]
-		public static IDictionary<K, V> GetRandomElements<K, V>(IDictionary<K, V> dict, int count,int a = 0)//好像写了一堆辣鸡
+		public static IDictionary<K, V> GetRandomElements<K, V>(IDictionary<K, V> dict, int count, int a = 0)//好像写了一堆辣鸡
 		{
 			Stopwatch sw = new Stopwatch();
 			sw.Start();
-			
+
 			var selected = GetRandomNumbers(0, dict.Count, count);
 			var r = new Dictionary<K, V>();
 			var par = dict.Select((e) => e.Key).ToArray();
@@ -158,13 +156,12 @@ namespace Breakdawn.Utils
 			{
 				r.Add(par[selected[i]], dict[par[selected[i]]]);
 			}
-			
+
 			sw.Stop();
 			Debug.LogWarning($"时间花费:{sw.ElapsedMilliseconds}");
 
 			return r;
 		}
-
 		/// <summary>
 		/// 获取随机数字
 		/// </summary>
@@ -174,52 +171,28 @@ namespace Breakdawn.Utils
 		/// <returns>随机的数字数组</returns>
 		public static IList<int> GetRandomNumbers(int min, int max, int count)
 		{
-			//Stopwatch sw = new Stopwatch();
-			//sw.Start();
-			int t;
-			var res = new List<int>();
-			if (count > (max - min) / 2)
+			var all = max - min;
+			var result = new List<int>(all);
+			for (int a = min; a < max; a++)
+				result.Add(a);
+			var remain = all - count;
+			if (count >= all / 2)
 			{
-				var del = new List<int>(count);
-				t = max - min - count;
-				for (int i = min; i < max; i++)
-					res.Add(i);
-				for (int i = 0; i < t; i++)
-				{
-					var a = Random.Range(min, max);
-					if (i == 0)
-						del.Add(a);
-					else
-					{
-						if (del.Contains(a))
-							i -= 1;
-						else
-							del.Add(a);
-					}
-				}
-				foreach (var item in del)
-					res.Remove(item);
+				for (int a = 0; a < remain; a++)
+					result.RemoveAt(Random.Range(0, result.Count));
+				return result;
 			}
 			else
 			{
-				t = count;
-				for (int i = 0; i < t; i++)
+				var rr = new int[count];
+				for (int i = 0; i < count; i++)
 				{
-					var a = Random.Range(min, max);
-					if (i == 0)
-						res.Add(a);
-					else
-					{
-						if (res.Contains(a))
-							i -= 1;
-						else
-							res.Add(a);
-					}
+					int del = Random.Range(0, result.Count);
+					rr[i] = result[del];
+					result.RemoveAt(del);
 				}
+				return rr;
 			}
-			//sw.Stop();
-			//Debug.Log(sw.ElapsedMilliseconds);
-			return res;
 		}
 		/// <summary>
 		/// 获取随机数字
