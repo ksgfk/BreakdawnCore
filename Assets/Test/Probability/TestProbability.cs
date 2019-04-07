@@ -37,6 +37,9 @@ namespace Breakdawn
 
 			var a = Probability.GetRandomNumbers(0, 10, 2);
 			Debug.Log(a.Count);
+
+			var b = Probability.Percent(2, Precision.Super);
+
 			//foreach (var item in a)
 			//{
 			//	Debug.Log(item);

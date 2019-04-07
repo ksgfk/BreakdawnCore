@@ -13,16 +13,16 @@ namespace Breakdawn.Utils
 		/// <summary>
 		/// 最高
 		/// </summary>
-		Super,
+		Super = 1000000,
 		/// <summary>
 		/// 最高-1
 		/// </summary>
-		Lighting,
-		VeryHigh,
-		High,
-		Medium,
-		Low,
-		VeryLow
+		Lighting = 100000,
+		VeryHigh = 10000,
+		High = 1000,
+		Medium = 100,
+		Low = 10,
+		VeryLow = 1
 	}
 
 	public static class Probability
@@ -56,7 +56,7 @@ namespace Breakdawn.Utils
 		{
 			if (percent < 0 || percent > 100)
 				Debug.LogWarning($"概率:{percent}永远返回true或false");
-			var p = SwitchMode(precision);
+			var p = (float)precision;
 			var ran = Random.Range(0F, 100F * p);
 			return ran < percent * p;
 		}
@@ -65,41 +65,9 @@ namespace Breakdawn.Utils
 		{
 			if (percent < 0 || percent > 100)
 				Debug.LogWarning($"概率:{percent}永远返回true或false");
-			var p = SwitchMode(precision);
+			var p = (float)precision;
 			ran = Random.Range(0F, 100F * p);
 			return ran < percent * p;
-		}
-
-		private static int SwitchMode(Precision precision)
-		{
-			int p;
-			switch (precision)
-			{
-				case Precision.Super:
-					p = 1000000;
-					break;
-				case Precision.Lighting:
-					p = 100000;
-					break;
-				case Precision.VeryHigh:
-					p = 10000;
-					break;
-				case Precision.High:
-					p = 1000;
-					break;
-				case Precision.Medium:
-					p = 100;
-					break;
-				case Precision.Low:
-					p = 10;
-					break;
-				case Precision.VeryLow:
-					p = 1;
-					break;
-				default:
-					throw new Exception("到底是什么黑魔法");
-			}
-			return p;
 		}
 		/// <summary>
 		/// 获取数组中随机元素
