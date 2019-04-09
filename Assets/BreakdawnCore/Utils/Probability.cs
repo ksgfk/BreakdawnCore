@@ -84,28 +84,29 @@ namespace Breakdawn.Utils
 			if (count <= 0)
 				throw new ArgumentException($"count不能小于等于0，count值:{count}", "count");
 
-			var result = new List<T>(list.Count);
+			float all = list.Count;
+			float pro = (count / all) * 100;
+
+			var result = new List<T>(count);
+			var canUse = new List<T>();
+
 			foreach (var item in list)
-				result.Add(item);
-			if (count >= list.Count / 2)
 			{
-				for (int a = 0; a < list.Count - count; a++)
+				if (result.Count != count)
 				{
-					var willRemove = Random.Range(0, result.Count);
-					result.RemoveAt(willRemove);
+					if (Percent(pro))
+						result.Add(item);
+					else
+						canUse.Add(item);
 				}
+				else
+					break;
 			}
-			else
+			if (result.Count != count)
 			{
-				var temp = new List<T>(count);
-				for (int a = 0; a < count; a++)
-				{
-					var willAdd = Random.Range(0, result.Count);
-					temp.Add(result[willAdd]);
-					result.RemoveAt(willAdd);
-				}
-				result = temp;
-				//GC.Collect();//我好像用了很多内存
+				var willAdded = GetRandomElements(canUse, count - result.Count);
+				foreach (var a in willAdded)
+					result.Add(a);
 			}
 			return result;
 		}
@@ -126,9 +127,33 @@ namespace Breakdawn.Utils
 			if (count <= 0)
 				throw new ArgumentException($"count不能小于等于0，count值:{count}", "count");
 
-			var keys = dict.Keys.ToArray();
-			var selectedKey = GetRandomElements(keys, count);
-			return selectedKey;
+			float all = dict.Count;
+			float pro = (count / all) * 100;
+
+			var keys = dict.Keys.ToList();
+			var result = new List<K>(count);
+			var canUse = new List<K>(count);
+
+			foreach (var item in keys)
+			{
+				if (result.Count != count)
+				{
+					if (Percent(pro))
+						result.Add(item);
+					else
+						canUse.Add(item);
+				}
+				else
+					break;
+			}
+			if (result.Count != count)
+			{
+				var willAdded = GetRandomElements(canUse, count - result.Count);
+				foreach (var a in willAdded)
+					result.Add(a);
+			}
+
+			return result;
 		}
 		/// <summary>
 		/// 获取随机数字
