@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Breakdawn.Expansion;
 
-namespace Breakdawn
+namespace Breakdawn.Test
 {
 	public class TransformCube : MonoBehaviour
 	{
