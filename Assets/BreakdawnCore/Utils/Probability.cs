@@ -71,8 +71,9 @@ namespace Breakdawn.Utils
 		/// 获取数组中随机元素
 		/// </summary>
 		/// <param name="count">数量</param>
+		/// <param name="isCheckCount">检查返回的元素数量是否与count相等,若检查则递归直到相等,反之直接返回结果,结果可能比count小</param>
 		/// <returns>随机的元素数组</returns>
-		public static IList<T> GetRandomElements<T>(IList<T> list, int count)
+		public static IList<T> GetRandomElements<T>(IList<T> list, int count, bool isCheckCount = true)
 		{
 			if (count >= list.Count)
 			{
@@ -88,7 +89,7 @@ namespace Breakdawn.Utils
 			float pro = (count / all) * 100;
 
 			var result = new List<T>(count);
-			var canUse = new List<T>();
+			List<T> canUse = isCheckCount ? new List<T>() : null;
 
 			foreach (var item in list)
 			{
@@ -96,13 +97,13 @@ namespace Breakdawn.Utils
 				{
 					if (Percent(pro))
 						result.Add(item);
-					else
+					else if (isCheckCount)
 						canUse.Add(item);
 				}
 				else
 					break;
 			}
-			if (result.Count != count)
+			if (isCheckCount && result.Count != count)
 			{
 				var willAdded = GetRandomElements(canUse, count - result.Count);
 				foreach (var a in willAdded)
@@ -114,8 +115,9 @@ namespace Breakdawn.Utils
 		/// 获取字典中随机元素
 		/// </summary>
 		/// <param name="count">数量</param>
+		/// <param name="isCheckCount">检查返回的元素数量是否与count相等,若检查则递归直到相等,反之直接返回结果,结果可能比count小</param>
 		/// <returns>随机的元素Keys</returns>
-		public static IList<K> GetRandomElements<K, V>(IDictionary<K, V> dict, int count)
+		public static IList<K> GetRandomElements<K, V>(IDictionary<K, V> dict, int count, bool isCheckCount = true)
 		{
 			if (count >= dict.Count)
 			{
@@ -132,7 +134,7 @@ namespace Breakdawn.Utils
 
 			var keys = dict.Keys.ToList();
 			var result = new List<K>(count);
-			var canUse = new List<K>(count);
+			List<K> canUse = isCheckCount ? new List<K>() : null;
 
 			foreach (var item in keys)
 			{
@@ -140,13 +142,13 @@ namespace Breakdawn.Utils
 				{
 					if (Percent(pro))
 						result.Add(item);
-					else
+					else if (isCheckCount)
 						canUse.Add(item);
 				}
 				else
 					break;
 			}
-			if (result.Count != count)
+			if (isCheckCount && result.Count != count)
 			{
 				var willAdded = GetRandomElements(canUse, count - result.Count);
 				foreach (var a in willAdded)
@@ -159,46 +161,52 @@ namespace Breakdawn.Utils
 		/// 获取随机数字
 		/// </summary>
 		/// <param name="min">数字最小值(能取到最小值)</param>
-		/// <param name="max">数字最大值(能取到最大值)</param>
+		/// <param name="max">数字最大值(不能取到最大值)</param>
 		/// <param name="count">数量</param>
 		/// <returns>随机的数字数组</returns>
-		public static IList<int> GetRandomNumbers(int min, int max, int count)
+		public static IList<int> GetRandomNumbers(int min, int max, int count, bool isCheckCount = true)
 		{
 			var all = max - min;
 
 			if (count == 1)
 				return new int[1] { Random.Range(min, max + 1) };
 			if (all <= 0)
-				throw new ArgumentException($"count不能小于等于0，count值:{count}", "count");
+				throw new ArgumentException($"max减min不能小于等于0，当前值:{all}", "min,max");
 
-			var result = new List<int>(all);
+			var allChoose = new List<int>(all);
 			for (int a = min; a < max; a++)
-				result.Add(a);
+				allChoose.Add(a);
 
 			if (count >= all)
 			{
 				Debug.LogWarning($"想随机的数量{count}比最小值{min}到最大值{max}的整数数量多{all}");
-				return result;
+				return allChoose;
 			}
 
-			var remain = all - count;
-			if (count >= all / 2)
+			float pro = (count / all) * 100;
+
+			var result = new List<int>(count);
+			List<int> canUse = isCheckCount ? new List<int>() : null;
+
+			foreach (var item in allChoose)
 			{
-				for (int a = 0; a < remain; a++)
-					result.RemoveAt(Random.Range(0, result.Count));
-				return result;
-			}
-			else
-			{
-				var rr = new int[count];
-				for (int i = 0; i < count; i++)
+				if (result.Count != count)
 				{
-					int del = Random.Range(0, result.Count);
-					rr[i] = result[del];
-					result.RemoveAt(del);
+					if (Percent(pro))
+						result.Add(item);
+					else if (isCheckCount)
+						canUse.Add(item);
 				}
-				return rr;
+				else
+					break;
 			}
+			if (isCheckCount && allChoose.Count != count)
+			{
+				var willAdded = GetRandomElements(canUse, count - result.Count);
+				foreach (var a in willAdded)
+					result.Add(a);
+			}
+			return result;
 		}
 		/// <summary>
 		/// 获取随机数字

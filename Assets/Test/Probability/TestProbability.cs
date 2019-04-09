@@ -48,6 +48,15 @@ namespace Breakdawn.Test
 				Debug.Log($"结果的元素量{c.Count}");
 				Debug.Log($"耗时{sw.ElapsedMilliseconds}");
 
+				Stopwatch sw1 = new Stopwatch();
+				sw.Start();
+				var d = Probability.GetRandomNumbers(0, 50000, 25000);
+				sw.Stop();
+				Debug.Log($"结果的元素量{d.Count}");
+				Debug.Log($"耗时{sw1.ElapsedMilliseconds}");
+
+				Debug.Log($"{d[0]} {d[1]} {d[2]} {d[3]} {d[4]}");
+
 				key = false;
 			}
 		}
