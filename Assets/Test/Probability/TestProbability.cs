@@ -41,21 +41,26 @@ namespace Breakdawn.Test
 				//{
 				//	a.Add(b);
 				//}
+				int z;
 				Stopwatch sw = new Stopwatch();
 				sw.Start();
-				var c = Probability.GetRandomElements(a, 25000);
+				IList<int> c = Probability.GetRandomElements(a, 25000, true);
+				foreach (var item in c)
+				{
+					z = a[item];
+				}
 				sw.Stop();
 				Debug.Log($"结果的元素量{c.Count}");
 				Debug.Log($"耗时{sw.ElapsedMilliseconds}");
 
-				Stopwatch sw1 = new Stopwatch();
-				sw.Start();
-				var d = Probability.GetRandomNumbers(0, 50000, 25000);
-				sw.Stop();
-				Debug.Log($"结果的元素量{d.Count}");
-				Debug.Log($"耗时{sw1.ElapsedMilliseconds}");
+				//Stopwatch sw1 = new Stopwatch();
+				//sw.Start();
+				//var d = Probability.GetRandomNumbers(0, 50000, 25000);
+				//sw.Stop();
+				//Debug.Log($"结果的元素量{d.Count}");
+				//Debug.Log($"耗时{sw1.ElapsedMilliseconds}");
 
-				Debug.Log($"{d[0]} {d[1]} {d[2]} {d[3]} {d[4]}");
+				//Debug.Log($"{d[0]} {d[1]} {d[2]} {d[3]} {d[4]}");
 
 				key = false;
 			}

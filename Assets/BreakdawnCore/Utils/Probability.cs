@@ -158,6 +158,29 @@ namespace Breakdawn.Utils
 			return result;
 		}
 		/// <summary>
+		/// 获取字典中随机元素
+		/// </summary>
+		/// <param name="count">数量</param>
+		/// <returns>随机的元素表</returns>
+		public static IDictionary<K, V> GetRandomElements<K, V>(IDictionary<K, V> dict, int count)
+		{
+			var keys = new List<K>(dict.Keys);
+			var result = new Dictionary<K, V>(count);
+
+			while (true)//TODO:优化count数量接近dict.Count数量的情况
+			{
+				if (result.Count != count)
+				{
+					var randomKey = keys[Random.Range(0, keys.Count)];
+					if (!result.ContainsKey(randomKey))
+						result.Add(randomKey, dict[randomKey]);
+				}
+				else
+					break;
+			}
+			return result;
+		}
+		/// <summary>
 		/// 获取随机数字
 		/// </summary>
 		/// <param name="min">数字最小值(能取到最小值)</param>
