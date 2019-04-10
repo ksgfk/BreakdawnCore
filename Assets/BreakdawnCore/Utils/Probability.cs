@@ -164,6 +164,22 @@ namespace Breakdawn.Utils
 		/// <returns>随机的元素表</returns>
 		public static IDictionary<K, V> GetRandomElements<K, V>(IDictionary<K, V> dict, int count)
 		{
+			if (count >= dict.Count)
+			{
+				Debug.LogWarning($"想随机的数量({count})比数组内含有的个数({dict.Count})多");
+				return dict;
+			}
+			if (count == 1)
+			{
+				var res = new Dictionary<K, V>();
+				var a = dict.ElementAt(Random.Range(0, dict.Count));
+				res.Add(a.Key, a.Value);
+				return res;
+			}
+
+			if (count <= 0)
+				throw new ArgumentException($"count不能小于等于0，count值:{count}", "count");
+
 			var keys = new List<K>(dict.Keys);
 			var result = new Dictionary<K, V>(count);
 
