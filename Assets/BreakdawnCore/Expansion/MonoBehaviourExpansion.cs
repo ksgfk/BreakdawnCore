@@ -6,24 +6,24 @@ namespace Breakdawn.Expansion
 {
 	public static class MonoBehaviourExpansion
 	{
-		public static void InvokeCoroutine(this MonoBehaviour behaviour, Action action, float seconds)
+		public static Coroutine InvokeCoroutine(this MonoBehaviour behaviour, Action action, float seconds)
 		{
-			behaviour.StartCoroutine(DelayInvoke(action, seconds));
+			return behaviour.StartCoroutine(DelayInvoke(action, seconds));
 		}
 
-		public static void InvokeCoroutine<T>(this MonoBehaviour behaviour, Action<T> action, T param, float seconds)
+		public static Coroutine InvokeCoroutine<T>(this MonoBehaviour behaviour, Action<T> action, T param, float seconds)
 		{
-			behaviour.StartCoroutine(DelayInvoke(action, param, seconds));
+			return behaviour.StartCoroutine(DelayInvoke(action, param, seconds));
 		}
 
-		public static void InvokeCoroutine<T>(this MonoBehaviour behaviour, Func<T> action, CoroutineResult<T> result, float seconds)
+		public static Coroutine InvokeCoroutine<T>(this MonoBehaviour behaviour, Func<T> action, CoroutineResult<T> result, float seconds)
 		{
-			behaviour.StartCoroutine(DelayInvoke(action, result, seconds));
+			return behaviour.StartCoroutine(DelayInvoke(action, result, seconds));
 		}
 
-		public static void InvokeCoroutine<T, TA>(this MonoBehaviour behaviour, Func<TA, T> action, TA parma, CoroutineResult<T> result, float seconds)
+		public static Coroutine InvokeCoroutine<T, TA>(this MonoBehaviour behaviour, Func<TA, T> action, TA parma, CoroutineResult<T> result, float seconds)
 		{
-			behaviour.StartCoroutine(DelayInvoke(action, parma, result, seconds));
+			return behaviour.StartCoroutine(DelayInvoke(action, parma, result, seconds));
 		}
 
 		private static IEnumerator DelayInvoke(Action action, float seconds)
