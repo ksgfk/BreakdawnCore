@@ -11,23 +11,24 @@ namespace Breakdawn.Test
 		private void Start()
 		{
 			//transform.SetLocalPos(0, 2, 0);
-			Func<string> hello = new Func<string>(Hello);
+			Func<string, string> hello = new Func<string, string>(PrintString);
 			test = new CoroutineResult<string>();
-			coroutine = MonoBehaviourExpansion.InvokeCoroutine(this, hello, test, 2.5F);
+			coroutine = MonoBehaviourExpansion.InvokeCoroutine(this, hello, "233", test, 2.5F);
 		}
 
 		private void Update()
 		{
-			StopCoroutine(coroutine);
+			//StopCoroutine(coroutine);
 			if (test.TryGetResult(out var res))
 			{
 				Debug.Log(res);
+				//gameObject.Hide();
 			}
 		}
 
-		private string Hello()
+		private string PrintString(string a)
 		{
-			return "Hello,Coroutine";
+			return a;
 		}
 	}
 }
