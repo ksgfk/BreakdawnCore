@@ -1,68 +1,40 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Breakdawn.Event
 {
-	public class EventBus
+	public static class EventBus
 	{
-		public static EventBus Instance = new EventBus();
-
-		private Dictionary<object, Delegate> mEventDict;
-
-		private EventBus()
+		#region NoParma
+		public static void Add<T>(IEventType<T> eventType, T key, Action action)
 		{
-			mEventDict = new Dictionary<object, Delegate>();
+			eventType.Register(key, action);
 		}
 
-		private void Register<K, V>(IEventType<K, V> eventType, K key, Delegate callBack)
+		public static void Remove<T>(IEventType<T> eventType, T key, Action action)
 		{
-			if (!mEventDict.ContainsKey(eventType.GetEventType(key)))
-				mEventDict.Add(eventType.GetEventType(key), null);
-			Delegate d = mEventDict[eventType.GetEventType(key)];
-			if (d != null && d.GetType() != callBack.GetType())
-				throw new Exception($"添加监听异常:尝试为{eventType.GetEventType(key)}添加不同类型委托.当前事件对应委托{d.GetType()},要添加委托{callBack.GetType()}");
+			eventType.RemoveEvent(key, action);
 		}
 
-		private void OnRemoving<K, V>(IEventType<K, V> eventType, K key, Delegate callBack)
+		public static void Execute<T>(IEventType<T> eventType, T key)
 		{
-			if (mEventDict.TryGetValue(eventType.GetEventType(key), out var d))
-			{
-				if (d == null)
-					throw new Exception($"移除监听异常:没有事件{eventType.GetEventType(key)}对应委托");
-				if (d.GetType() != callBack.GetType())
-					throw new Exception($"移除监听异常:尝试为事件{eventType.GetEventType(key)}移除不同类型委托{callBack.GetType()},应为{d.GetType()}");
-			}
-			else
-				throw new Exception($"移除监听异常:没有事件{eventType.GetEventType(key)}");
+			var action = eventType.GetEvent(key);
+			action();
+		}
+		#endregion
+		public static void Add<T, A>(IEventType<T, A> eventType, T key, Action<A> action)
+		{
+			eventType.Register(key, action);
 		}
 
-		private void OnRemoved<K, V>(IEventType<K, V> eventType, K key)
+		public static void Remove<T, A>(IEventType<T, A> eventType, T key, Action<A> action)
 		{
-			if (mEventDict[eventType.GetEventType(key)] == null)
-				mEventDict.Remove(eventType.GetEventType(key));
+			eventType.RemoveEvent(key, action);
 		}
 
-		public void Add<K, V>(IEventType<K, V> eventType, K key, CallBack callBack)
+		public static void Execute<T, A>(IEventType<T, A> eventType, T key, A parma)
 		{
-			Register(eventType, key, callBack);
-			mEventDict[eventType.GetEventType(key)] = mEventDict[eventType.GetEventType(key)] as CallBack + callBack;
-		}
-
-		public void Remove<K, V>(IEventType<K, V> eventType, K key, CallBack callBack)
-		{
-			OnRemoving(eventType, key, callBack);
-			mEventDict[eventType.GetEventType(key)] = mEventDict[eventType.GetEventType(key)] as CallBack - callBack;
-			OnRemoved(eventType, key);
-		}
-
-		public void Execute<K, V>(IEventType<K, V> eventType, K key)
-		{
-			if (!mEventDict.TryGetValue(eventType.GetEventType(key), out Delegate d))
-				return;
-			if (d is CallBack c)
-				c();
-			else
-				throw new Exception($"广播事件异常:事件{eventType.GetEventType(key)}对应委托有不同类型");
+			var action = eventType.GetEvent(key);
+			action(parma);
 		}
 	}
 }
