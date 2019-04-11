@@ -21,6 +21,7 @@ namespace Breakdawn.Event
 			action();
 		}
 		#endregion
+		#region OneParma
 		public static void Add<T, A>(IEventType<T, A> eventType, T key, Action<A> action)
 		{
 			eventType.Register(key, action);
@@ -36,5 +37,6 @@ namespace Breakdawn.Event
 			var action = eventType.GetEvent(key);
 			action(parma);
 		}
+		#endregion
 	}
 }

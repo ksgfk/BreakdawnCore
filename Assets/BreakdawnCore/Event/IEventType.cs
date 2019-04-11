@@ -13,7 +13,7 @@ namespace Breakdawn.Event
 		/// </summary>
 		Action GetEvent(T @event);
 		/// <summary>
-		/// 
+		/// 移除事件
 		/// </summary>
 		void RemoveEvent(T eventKey, Action @event);
 	}
