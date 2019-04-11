@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using Breakdawn.Expansion;
 using System;
+using Breakdawn.Event;
 
 namespace Breakdawn.Test
 {
@@ -13,7 +14,10 @@ namespace Breakdawn.Test
 			//transform.SetLocalPos(0, 2, 0);
 			Func<string, string> hello = new Func<string, string>(PrintString);
 			test = new CoroutineResult<string>();
-			coroutine = MonoBehaviourExpansion.InvokeCoroutine(this, hello, "233", test, 2.5F);
+			coroutine = this.InvokeCoroutine(hello, "233", test, 2.5F);
+
+			Event.EventType.Instance.AddEventType(EventKeys.A, EventValues.A);
+			EventBus.Instance.Add(Event.EventType.Instance, EventKeys.A, () => { Debug.Log("emmm"); });
 		}
 
 		private void Update()
@@ -21,9 +25,10 @@ namespace Breakdawn.Test
 			//StopCoroutine(coroutine);
 			if (test.TryGetResult(out var res))
 			{
-				Debug.Log(res);
-				//gameObject.Hide();
+				//Debug.Log(res);
 			}
+
+			EventBus.Instance.Execute(Event.EventType.Instance, EventKeys.A);
 		}
 
 		private string PrintString(string a)
