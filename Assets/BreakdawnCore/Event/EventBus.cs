@@ -25,6 +25,12 @@ namespace Breakdawn.Event
 			throw new Exception($"事件异常:名为{name}的委托集合没有对应值");
 		}
 
+		public void AddEvent<T,ACT>(string name, T key,ACT @event) where ACT : Delegate
+		{
+			var a = GetEvents<T, ACT>(name);
+			a.Register(key, @event);
+		}
+
 		public ACT GetExecuteEvent<T, ACT>(TempletEvents<T, ACT> events, T key) where ACT : Delegate
 		{
 			return events.GetEvent(key);
