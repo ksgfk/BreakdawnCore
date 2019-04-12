@@ -9,6 +9,8 @@
 
 使用委托集合的`Remove();`可以删除一个委托。使用`EventBus.Instance.RemoveEvents();`可以删除委托集合（如果你没有把它作为变量保存，它就真的没了）。
 
+MonoMessage这个类实现了可挂载脚本的事件，如果在OnDestory阶段需要做一些操作，需要写在`OnBeforeDestroy();`方法中，避免直接使用OnDestory造成的一些问题。
+
 ## Example/例子
 ```
 private void Start()
@@ -39,6 +41,37 @@ private int Hello()
 }
 ```
 
-将HangOnObject挂到物体上，启动，unity控制台就会疯狂刷233、HEllo,233、666啦。
+将该脚本挂到物体上，启动，unity控制台就会疯狂刷233、HEllo,233、666啦。
+
+```
+public class MonoEvent : MonoMessage<Action<object>>
+{
+	private void Start()
+	{
+		Register("Hello", Hello);
+		StringPool.MonoEventToString = ToString();
+		this.InvokeCoroutine(() => { Destroy(gameObject); }, 5F);
+	}
+
+	private void Hello(object a)
+	{
+		Debug.Log($"跨脚本通信:{a}");
+	}
+
+	public override void OnBeforeDestroy() { }
+}
+
+public static class StringPool
+{
+	public static string MonoEventToString;
+}
+```
+将MonoEvent挂载到物体身上，然后在需要通信的地方写
+```
+var d = EventBus.Instance.GetEvents<string, Action<object>>(StringPool.MonoEventToString).GetEvent("Hello");
+d(233);
+```
+
+就可以在控制台输出`跨脚本通信:233`了。
 
 [1]:https://github.com/ksgfk/BreakdawnCore/blob/master/Assets/BreakdawnCore/Event/TempletEvents.cs

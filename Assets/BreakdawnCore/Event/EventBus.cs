@@ -18,6 +18,14 @@ namespace Breakdawn.Event
 			return n;
 		}
 		/// <summary>
+		/// 添加一个委托集合
+		/// </summary>
+		public IEvent<T, ACT> AddEvents<T, ACT>(IEvent<T, ACT> @event, string name) where ACT : Delegate
+		{
+			factory.Add(name, @event);
+			return @event;
+		}
+		/// <summary>
 		/// 获取一个委托集合
 		/// </summary>
 		public IEvent<T, ACT> GetEvents<T, ACT>(string name) where ACT : Delegate
