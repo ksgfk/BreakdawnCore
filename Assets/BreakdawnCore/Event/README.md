@@ -11,32 +11,32 @@
 
 ## Example/例子
 ```
-	private void Start()
-	{
-		EventBus.Instance.CreateEvents<MyEventTest, Action>("myNoParma").Register(MyEventTest.A, () => { Debug.Log("233"); });
-			EventBus.Instance.CreateEvents<MyEventTest, Action<int>>("myOneParma").Register(MyEventTest.A, Hello);
-			EventBus.Instance.CreateEvents<MyEventTest, Func<int>>("myNoParmaR").Register(MyEventTest.A, Hello);
-	}
+private void Start()
+{
+	EventBus.Instance.CreateEvents<MyEventTest, Action>("myNoParma").Register(MyEventTest.A, () => { Debug.Log("233"); });
+	EventBus.Instance.CreateEvents<MyEventTest, Action<int>>("myOneParma").Register(MyEventTest.A, Hello);
+	EventBus.Instance.CreateEvents<MyEventTest, Func<int>>("myNoParmaR").Register(MyEventTest.A, Hello);
+}
 
-	private void Update()
-	{
-		var a = EventBus.Instance.GetEvents<MyEventTest, Action>("myNoParma").GetEvent(MyEventTest.A);
-		a();
-		var b = EventBus.Instance.GetEvents<MyEventTest, Action<int>>("myOneParma").GetEvent(MyEventTest.A);
-		b(233);
-		var c = EventBus.Instance.GetEvents<MyEventTest, Func<int>>("myNoParmaR").GetEvent(MyEventTest.A);
-		Debug.Log(c());
-	}
+private void Update()
+{
+	var a = EventBus.Instance.GetEvents<MyEventTest, Action>("myNoParma").GetEvent(MyEventTest.A);
+	a();
+	var b = EventBus.Instance.GetEvents<MyEventTest, Action<int>>("myOneParma").GetEvent(MyEventTest.A);
+	b(233);
+	var c = EventBus.Instance.GetEvents<MyEventTest, Func<int>>("myNoParmaR").GetEvent(MyEventTest.A);
+	Debug.Log(c());
+}
 
-	private void Hello(int a)
-	{
-		Debug.Log($"HEllo,{a}");
-	}
+private void Hello(int a)
+{
+	Debug.Log($"HEllo,{a}");
+}
 
-	private int Hello()
-	{
-		return 666;
-	}
+private int Hello()
+{
+	return 666;
+}
 ```
 
 将HangOnObject挂到物体上，启动，unity控制台就会疯狂刷233、HEllo,233、666啦。

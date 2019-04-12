@@ -5,15 +5,15 @@ namespace Breakdawn.Event
 	public interface IEvent<T, A> where A : Delegate
 	{
 		/// <summary>
-		/// 添加事件
+		/// 添加委托
 		/// </summary>
 		void Register(T key, A @event);
 		/// <summary>
-		/// 获取事件
+		/// 获取委托
 		/// </summary>
 		A GetEvent(T @event);
 		/// <summary>
-		/// 移除事件
+		/// 移除委托
 		/// </summary>
 		void Remove(T Key, A @event);
 	}
