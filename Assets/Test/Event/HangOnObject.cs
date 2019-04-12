@@ -8,21 +8,23 @@ namespace Breakdawn.Test
 {
 	public class HangOnObject : MonoBehaviour
 	{
-		private TempletEvents<MyEventTest, Action> myEvent;
-
 		private void Start()
 		{
-			myEvent = new TempletEvents<MyEventTest, Action>();
-
-			//EventBus.Add(myEvent, MyEventTest.A, () => { Debug.Log("C# is the best language!"); });
-			myEvent.Register(MyEventTest.A, () => { Debug.Log("C# is the best language!"); });
+			EventBus.Instance.CreateEvents<MyEventTest, Action>("myNoParma").Register(MyEventTest.A, () => { Debug.Log("233"); });
+			EventBus.Instance.CreateEvents<MyEventTest, Action<int>>("myOneParma").Register(MyEventTest.A, Hello);
 		}
 
 		private void Update()
 		{
-			//EventBus.Execute(myEvent, MyEventTest.A);
-			var a = myEvent.GetEvent(MyEventTest.A);
+			var a = EventBus.Instance.GetEvents<MyEventTest, Action>("myNoParma").GetEvent(MyEventTest.A);
 			a();
+			var b = EventBus.Instance.GetEvents<MyEventTest, Action<int>>("myOneParma").GetEvent(MyEventTest.A);
+			b(233);
+		}
+
+		private void Hello(int a)
+		{
+			Debug.Log($"HEllo,{a}");
 		}
 	}
 }

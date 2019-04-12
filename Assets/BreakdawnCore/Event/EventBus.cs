@@ -1,25 +1,38 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Breakdawn.Event
 {
-	public static class EventBus
+	public class EventBus
 	{
-		#region NoParma
-		public static void Add<T>(IEventType<T> eventType, T key, Action action)
+		public static EventBus Instance = new EventBus();
+
+		private Dictionary<string, object> factory = new Dictionary<string, object>();
+
+		public TempletEvents<T, ACT> CreateEvents<T, ACT>(string name) where ACT : Delegate
 		{
-			eventType.Register(key, action);
+			var n = new TempletEvents<T, ACT>();
+			factory.Add(name, n);
+			return n;
 		}
 
-		public static void Remove<T>(IEventType<T> eventType, T key, Action action)
+		public TempletEvents<T, ACT> GetEvents<T, ACT>(string name) where ACT : Delegate
 		{
-			eventType.RemoveEvent(key, action);
+			if (factory.TryGetValue(name, out var v))
+			{
+				return v as TempletEvents<T, ACT>;
+			}
+			throw new Exception($"事件异常:名为{name}的委托集合没有对应值");
 		}
 
-		public static void Execute<T>(IEventType<T> eventType, T key)
+		public ACT GetExecuteEvent<T, ACT>(TempletEvents<T, ACT> events, T key) where ACT : Delegate
 		{
-			var action = eventType.GetEvent(key);
-			action();
+			return events.GetEvent(key);
 		}
-		#endregion
+
+		public void RemoveEvents(string name)
+		{
+			factory.Remove(name);
+		}
 	}
 }

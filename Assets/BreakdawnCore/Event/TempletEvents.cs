@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace Breakdawn.Event
 {
@@ -62,10 +60,7 @@ namespace Breakdawn.Event
 		public void Register(T key, ACT @event)
 		{
 			OnRegister(key, @event);
-			if (@event is Action)
-			{
-				events[key] = (ACT)Delegate.Combine(events[key], @event);
-			}
+			events[key] = (ACT)Delegate.Combine(events[key], @event);
 		}
 
 		public void Remove(T key, ACT @event)
