@@ -3,24 +3,22 @@ using System.Collections.Generic;
 
 namespace Breakdawn.Event
 {
-	public class EventBus
+	public static class EventBus
 	{
-		public static EventBus Instance = new EventBus();
-
-		private Dictionary<string, object> factory = new Dictionary<string, object>();
+		private static Dictionary<string, object> factory = new Dictionary<string, object>();
 		/// <summary>
 		/// 新建一个委托集合实例。
 		/// </summary>
-		public IEvent<T, ACT> CreateEvents<T, ACT>(string name) where ACT : Delegate
+		public static IEvent<T, ACT> CreateEvents<T, ACT>(string name) where ACT : Delegate
 		{
-			var n = new TempletEvents<T, ACT>();
+			var n = new TemplateEvents<T, ACT>();
 			factory.Add(name, n);
 			return n;
 		}
 		/// <summary>
 		/// 添加一个委托集合
 		/// </summary>
-		public IEvent<T, ACT> AddEvents<T, ACT>(IEvent<T, ACT> @event, string name) where ACT : Delegate
+		public static IEvent<T, ACT> AddEvents<T, ACT>(IEvent<T, ACT> @event, string name) where ACT : Delegate
 		{
 			factory.Add(name, @event);
 			return @event;
@@ -28,7 +26,7 @@ namespace Breakdawn.Event
 		/// <summary>
 		/// 获取一个委托集合
 		/// </summary>
-		public IEvent<T, ACT> GetEvents<T, ACT>(string name) where ACT : Delegate
+		public static IEvent<T, ACT> GetEvents<T, ACT>(string name) where ACT : Delegate
 		{
 			if (factory.TryGetValue(name, out var v))
 			{
@@ -39,7 +37,7 @@ namespace Breakdawn.Event
 		/// <summary>
 		/// 向委托集合添加委托
 		/// </summary>
-		public void AddEvent<T, ACT>(string name, T key, ACT @event) where ACT : Delegate
+		public static void AddEvent<T, ACT>(string name, T key, ACT @event) where ACT : Delegate
 		{
 			var a = GetEvents<T, ACT>(name);
 			a.Register(key, @event);
@@ -47,14 +45,14 @@ namespace Breakdawn.Event
 		/// <summary>
 		/// 获取委托集合中的委托
 		/// </summary>
-		public ACT GetExecuteEvent<T, ACT>(IEvent<T, ACT> events, T key) where ACT : Delegate
+		public static ACT GetExecuteEvent<T, ACT>(IEvent<T, ACT> events, T key) where ACT : Delegate
 		{
 			return events.GetEvent(key);
 		}
 		/// <summary>
 		/// 删除委托集合
 		/// </summary>
-		public void RemoveEvents(string name)
+		public static void RemoveEvents(string name)
 		{
 			factory.Remove(name);
 		}

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Breakdawn.Event
 {
-	public class TempletEvents<T, ACT> : IEvent<T, ACT> where ACT : Delegate
+	public class TemplateEvents<T, ACT> : IEvent<T, ACT> where ACT : Delegate
 	{
 		protected Dictionary<T, ACT> events = new Dictionary<T, ACT>();
 

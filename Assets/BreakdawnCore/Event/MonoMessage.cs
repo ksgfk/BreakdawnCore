@@ -10,13 +10,13 @@ namespace Breakdawn.Event
 
 		private void Awake()
 		{
-			EventBus.Instance.AddEvents(this, ToString());
+			EventBus.AddEvents(this, ToString());
 		}
 
 		private void OnDestroy()
 		{
 			OnBeforeDestroy();
-			EventBus.Instance.RemoveEvents(ToString());
+			EventBus.RemoveEvents(ToString());
 			events.Clear();
 		}
 		/// <summary>
