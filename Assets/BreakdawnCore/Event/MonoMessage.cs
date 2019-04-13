@@ -19,7 +19,9 @@ namespace Breakdawn.Event
 			EventBus.Instance.RemoveEvents(ToString());
 			events.Clear();
 		}
-
+		/// <summary>
+		/// 用来代替OnDestroy，子类中最好不要使用OnDestroy
+		/// </summary>
 		public abstract void OnBeforeDestroy();
 
 		public ACT GetEvent(string @event)

@@ -28,5 +28,23 @@ namespace Breakdawn.Expansion
 			transform.localScale = Vector3.one;
 			transform.localRotation = Quaternion.identity;
 		}
+
+		public static Transform SetLocalPosition(this Transform transform, Vector3 vector3)
+		{
+			transform.localPosition = vector3;
+			return transform;
+		}
+
+		public static Transform SetLocalRotate(this Transform transform, Vector3 axis, float angle)
+		{
+			transform.Rotate(axis, angle, Space.Self);
+			return transform;
+		}
+
+		public static Transform SetLocalScale(this Transform transform, Vector3 vector3)
+		{
+			transform.localScale = vector3;
+			return transform;
+		}
 	}
 }

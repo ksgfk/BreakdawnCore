@@ -1,4 +1,5 @@
 ﻿using Breakdawn.Event;
+using Breakdawn.Expansion;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -20,6 +21,7 @@ namespace Breakdawn.Test
 			//EventBus.Instance.CreateEvents<MyEventTest, Action<int>>("myOneParma").Register(MyEventTest.A, Hello);
 			//EventBus.Instance.CreateEvents<MyEventTest, Func<int>>("myNoParmaR").Register(MyEventTest.A, Hello);
 			//EventBus.Instance.GetEvents<MyEventTest, Func<int>>("myNoParmaR").Register(MyEventTest.A, H);//有个暗坑
+			//transform.SetLocalPosition(new Vector3(2, 3, 3)).SetLocalRotate(new Vector3(0, 1, 0), 90).SetLocalScale(new Vector3(3, 4, 4));
 		}
 
 		private void Update()
@@ -30,8 +32,9 @@ namespace Breakdawn.Test
 			//b(233);
 			//var c = EventBus.Instance.GetEvents<MyEventTest, Func<int>>("myNoParmaR").GetEvent(MyEventTest.A);
 			//Debug.Log(c());
-			var d = EventBus.Instance.GetEvents<string, Action<object>>(StringPool.MonoMessageToString).GetEvent("Hello");
-			d(1);
+			//var d = EventBus.Instance.GetEvents<object, Action<object>>(StringPool.MonoMessageToString);
+			//var e = d.GetEvent("Hello");
+			//e(1);
 		}
 
 		private void Hello(int a)
