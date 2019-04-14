@@ -21,7 +21,7 @@ namespace Breakdawn.Test
 			//EventBus.Instance.CreateEvents<MyEventTest, Action<int>>("myOneParma").Register(MyEventTest.A, Hello);
 			//EventBus.Instance.CreateEvents<MyEventTest, Func<int>>("myNoParmaR").Register(MyEventTest.A, Hello);
 			//EventBus.Instance.GetEvents<MyEventTest, Func<int>>("myNoParmaR").Register(MyEventTest.A, H);//有个暗坑
-			//transform.SetLocalPosition(new Vector3(2, 3, 3)).SetLocalRotate(new Vector3(0, 1, 0), 90).SetLocalScale(new Vector3(3, 4, 4));
+			transform.SetLocalPosition(new Vector3(2, 3, 3)).SetLocalRotate(new Vector3(0, 1, 0), 90).SetLocalScale(new Vector3(3, 4, 4));
 		}
 
 		private void Update()

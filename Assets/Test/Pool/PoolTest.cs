@@ -11,7 +11,7 @@ namespace Breakdawn.Test
 		public GameObject game;
 		private void Start()
 		{
-			var a = new GameObjectFactory("MyTest", game);
+			var a = new GameObjectFactory(game);
 			a.Create();
 
 			var b = new GameObjectPool(game, 10);

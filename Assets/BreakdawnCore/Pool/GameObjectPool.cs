@@ -5,7 +5,7 @@ namespace Breakdawn.Pool
 {
 	public class GameObjectPool : TemplatePool<GameObject>
 	{
-		public GameObjectPool(GameObject t,int count) : base(t, count)
+		public GameObjectPool(GameObject t, int count) : base(t, count)
 		{
 
 		}
