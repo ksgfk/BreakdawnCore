@@ -7,6 +7,11 @@ namespace Breakdawn.Event
 	{
 		protected Dictionary<T, ACT> events = new Dictionary<T, ACT>();
 
+		public TemplateEvents(string name)
+		{
+			EventBus.Instance.AddEvents(this, name);
+		}
+
 		public ACT GetEvent(T @event)
 		{
 			if (events.TryGetValue(@event, out var action))

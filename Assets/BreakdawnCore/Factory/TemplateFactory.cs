@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Breakdawn.Factory
+﻿namespace Breakdawn.Factory
 {
 	public abstract class TemplateFactory<T> : IFactory<T>
 	{

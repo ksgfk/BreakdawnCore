@@ -1,15 +1,19 @@
-﻿using System;
+﻿using Breakdawn.Singleton;
+using System;
 using System.Collections.Generic;
 
 namespace Breakdawn.Event
 {
-	public static class EventBus
+	/// <summary>
+	/// 事件总线，管理所有事件
+	/// </summary>
+	public class EventBus : TemplateSingleton<EventBus>
 	{
-		private static Dictionary<string, object> factory = new Dictionary<string, object>();
+		private readonly Dictionary<string, object> factory = new Dictionary<string, object>();
 		/// <summary>
 		/// 新建一个委托集合实例。
 		/// </summary>
-		public static IEvent<T, ACT> CreateEvents<T, ACT>(string name) where ACT : Delegate
+		public IEvent<T, ACT> CreateEvents<T, ACT>(string name) where ACT : Delegate
 		{
 			var n = new TemplateEvents<T, ACT>();
 			factory.Add(name, n);
@@ -18,7 +22,7 @@ namespace Breakdawn.Event
 		/// <summary>
 		/// 添加一个委托集合
 		/// </summary>
-		public static IEvent<T, ACT> AddEvents<T, ACT>(IEvent<T, ACT> @event, string name) where ACT : Delegate
+		public IEvent<T, ACT> AddEvents<T, ACT>(IEvent<T, ACT> @event, string name) where ACT : Delegate
 		{
 			factory.Add(name, @event);
 			return @event;
@@ -26,7 +30,7 @@ namespace Breakdawn.Event
 		/// <summary>
 		/// 获取一个委托集合
 		/// </summary>
-		public static IEvent<T, ACT> GetEvents<T, ACT>(string name) where ACT : Delegate
+		public IEvent<T, ACT> GetEvents<T, ACT>(string name) where ACT : Delegate
 		{
 			if (factory.TryGetValue(name, out var v))
 			{
@@ -37,7 +41,7 @@ namespace Breakdawn.Event
 		/// <summary>
 		/// 向委托集合添加委托
 		/// </summary>
-		public static void AddEvent<T, ACT>(string name, T key, ACT @event) where ACT : Delegate
+		public void AddEvent<T, ACT>(string name, T key, ACT @event) where ACT : Delegate
 		{
 			var a = GetEvents<T, ACT>(name);
 			a.Register(key, @event);
@@ -45,14 +49,14 @@ namespace Breakdawn.Event
 		/// <summary>
 		/// 获取委托集合中的委托
 		/// </summary>
-		public static ACT GetExecuteEvent<T, ACT>(IEvent<T, ACT> events, T key) where ACT : Delegate
+		public ACT GetExecuteEvent<T, ACT>(IEvent<T, ACT> events, T key) where ACT : Delegate
 		{
 			return events.GetEvent(key);
 		}
 		/// <summary>
 		/// 删除委托集合
 		/// </summary>
-		public static void RemoveEvents(string name)
+		public void RemoveEvents(string name)
 		{
 			factory.Remove(name);
 		}

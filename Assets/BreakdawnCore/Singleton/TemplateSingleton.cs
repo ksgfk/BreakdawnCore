@@ -4,6 +4,10 @@ using System.Reflection;
 
 namespace Breakdawn.Singleton
 {
+	/// <summary>
+	/// 单例模板
+	/// </summary>
+	/// <typeparam name="T">单例类型</typeparam>
 	public class TemplateSingleton<T> : ISingleton<T>
 	{
 		private static readonly Lazy<T> instance = new Lazy<T>(() =>

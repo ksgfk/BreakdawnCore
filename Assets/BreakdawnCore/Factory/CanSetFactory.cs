@@ -2,25 +2,21 @@
 
 namespace Breakdawn.Factory
 {
-	public class CanSetFactory<T> : TemplateFactory<T> where T : ICloneable
+	public class CanSetFactory<T> : TemplateFactory<T> where T : new()
 	{
-		private Func<T> setTemplate;
-
-		public CanSetFactory(T template, Func<T> setTemplate)
+		public CanSetFactory(Func<T> setTemplate)
 		{
-			this.template = template;
-			this.setTemplate = setTemplate;
+			template = setTemplate();
 		}
 
 		public override T Create()
 		{
-			return (T)template.Clone();
+			return template;
 		}
 
 		public void SetTemplate(Func<T> set)
 		{
-			setTemplate = set;
-			template = setTemplate();
+			template = set();
 		}
 	}
 }
