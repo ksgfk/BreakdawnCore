@@ -15,7 +15,7 @@ namespace Breakdawn.Event
 		/// </summary>
 		public IEvent<T, ACT> CreateEvents<T, ACT>(string name) where ACT : Delegate
 		{
-			var n = new TemplateEvents<T, ACT>();
+			var n = new TemplateEvents<T, ACT>(name);
 			factory.Add(name, n);
 			return n;
 		}
