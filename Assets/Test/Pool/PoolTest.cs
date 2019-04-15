@@ -35,11 +35,15 @@ namespace Breakdawn.Test
 		private void Start()
 		{
 			var b = new GameObjectPool(game, 3, new GameObjectFactory(game, transform));
+
+
 			var c = new AB();
 
 			for (int i = 0; i < 5; i++)
 			{
-				Debug.Log(c.Get().a);
+				var d = c.Get();
+				Debug.Log(d.a);
+				c.Recycling(d);
 			}
 
 			//b.Get();
