@@ -13,7 +13,7 @@ namespace Breakdawn.Test
 		{
 			Register("Hello", Hello);
 			StringPool.MonoMessageToString = ToString();
-			this.InvokeCoroutine(() => { Destroy(gameObject); }, 5F);
+			//this.InvokeCoroutine(() => { Destroy(gameObject); }, 5F);
 		}
 
 		private void Hello(object a)

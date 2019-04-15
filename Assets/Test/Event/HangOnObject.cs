@@ -32,9 +32,9 @@ namespace Breakdawn.Test
 			//b(233);
 			//var c = EventBus.Instance.GetEvents<MyEventTest, Func<int>>("myNoParmaR").GetEvent(MyEventTest.A);
 			//Debug.Log(c());
-			//var d = EventBus.Instance.GetEvents<object, Action<object>>(StringPool.MonoMessageToString);
-			//var e = d.GetEvent("Hello");
-			//e(1);
+			var d = EventBus.Instance.GetEvents<string, Action<object>>(StringPool.MonoMessageToString);
+			var e = d.GetEvent("Hello");
+			e(1);
 		}
 
 		private void Hello(int a)

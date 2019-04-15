@@ -10,9 +10,12 @@ namespace Breakdawn.Event
 	public class EventBus : TemplateSingleton<EventBus>
 	{
 		private readonly Dictionary<string, object> factory = new Dictionary<string, object>();
+
+		private EventBus() { }
+
 		/// <summary>
 		/// 新建一个委托集合实例。
-		/// </summary>
+		/// </summary> 
 		public IEvent<T, ACT> CreateEvents<T, ACT>(string name) where ACT : Delegate
 		{
 			var n = new TemplateEvents<T, ACT>(name);

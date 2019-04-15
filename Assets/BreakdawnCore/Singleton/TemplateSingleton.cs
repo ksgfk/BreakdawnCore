@@ -8,7 +8,7 @@ namespace Breakdawn.Singleton
 	/// 单例模板
 	/// </summary>
 	/// <typeparam name="T">单例类型</typeparam>
-	public class TemplateSingleton<T> : ISingleton<T>
+	public abstract class TemplateSingleton<T>
 	{
 		private static readonly Lazy<T> instance = new Lazy<T>(() =>
 		{
@@ -22,10 +22,5 @@ namespace Breakdawn.Singleton
 		}, true);
 
 		public static T Instance { get => instance.Value; }
-
-		public T GetInstance()
-		{
-			return instance.Value;
-		}
 	}
 }
