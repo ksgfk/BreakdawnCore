@@ -8,7 +8,7 @@ namespace Breakdawn.Singleton
 	/// 单例模板
 	/// </summary>
 	/// <typeparam name="T">单例类型</typeparam>
-	public abstract class TemplateSingleton<T>
+	public abstract class TemplateSingleton<T> where T : class
 	{
 		private static readonly Lazy<T> instance = new Lazy<T>(() =>
 		{
@@ -18,7 +18,7 @@ namespace Breakdawn.Singleton
 			var constructor = constructors.SingleOrDefault(c => c.GetParameters().Count() == 0 && c.IsPrivate);
 			if (constructor == null)
 				throw new Exception($"单例异常:{typeof(T)}的构造函数必须是私有且无参");
-			return (T)constructor.Invoke(null);
+			return constructor.Invoke(null) as T;
 		}, true);
 
 		public static T Instance { get => instance.Value; }

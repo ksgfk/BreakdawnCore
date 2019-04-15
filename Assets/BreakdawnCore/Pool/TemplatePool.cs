@@ -4,23 +4,33 @@ using UnityEngine;
 
 namespace Breakdawn.Pool
 {
-	public abstract class TemplatePool<T> : IObjectPool<T>, IFactory<T>
+	public abstract class TemplatePool<T> : IObjectPool<T> where T : new()
 	{
 		protected T template;
 		protected Stack<T> pool;
+		protected IFactory<T> factory;
 
-		public TemplatePool()
+		public TemplatePool() : this(new T(), 10)
 		{
 		}
 
 		public TemplatePool(T t, int count)
 		{
 			template = t;
+			factory = new NormalFactory<T>(template);
 			pool = new Stack<T>(count);
 			Init(count);
 		}
 
-		private void Init(int count)
+		public TemplatePool(T t, int count, IFactory<T> factory)
+		{
+			template = t;
+			this.factory = factory;
+			pool = new Stack<T>(count);
+			Init(count);
+		}
+
+		protected virtual void Init(int count)
 		{
 			for (int a = 0; a < count; a++)
 			{
@@ -42,6 +52,9 @@ namespace Breakdawn.Pool
 			pool.Push(@object);
 		}
 
-		public abstract T Create();
+		public virtual T Create()
+		{
+			return factory.Create();
+		}
 	}
 }

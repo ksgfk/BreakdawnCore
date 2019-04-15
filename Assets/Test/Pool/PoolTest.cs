@@ -6,16 +6,44 @@ using UnityEngine;
 
 namespace Breakdawn.Test
 {
+	public class AB : TemplatePool<CD>
+	{
+		public AB()
+		{
+			template.a = 5;
+		}
+
+		protected override void Init(int count)
+		{
+			for (int a = 0; a < count; a++)
+			{
+				var b = Create();
+				b.a = a;
+				pool.Push(b);
+			}
+		}
+	}
+
+	public class CD
+	{
+		public int a;
+	}
+
 	public class PoolTest : MonoBehaviour
 	{
 		public GameObject game;
 		private void Start()
 		{
-			var a = new GameObjectFactory(game);
-			a.Create();
+			var b = new GameObjectPool(game, 3, new GameObjectFactory(game, transform));
+			var c = new AB();
 
-			var b = new GameObjectPool(game, 10);
-			b.Get();
+			for (int i = 0; i < 5; i++)
+			{
+				Debug.Log(c.Get().a);
+			}
+
+			//b.Get();
+
 		}
 
 		private void Update()

@@ -1,13 +1,13 @@
 ﻿using Breakdawn.Expansion;
+using Breakdawn.Factory;
 using UnityEngine;
 
 namespace Breakdawn.Pool
 {
 	public class GameObjectPool : TemplatePool<GameObject>
 	{
-		public GameObjectPool(GameObject t, int count) : base(t, count)
+		public GameObjectPool(GameObject t, int count, GameObjectFactory factory) : base(t, count, factory)
 		{
-
 		}
 
 		public override void Recycling(GameObject @object)
@@ -18,7 +18,7 @@ namespace Breakdawn.Pool
 
 		public override GameObject Create()
 		{
-			return GameObject.Instantiate(template).Hide();
+			return factory.Create().Hide();
 		}
 
 		public override GameObject Get()
