@@ -20,5 +20,10 @@ namespace Breakdawn.Pool
 		{
 			return GameObject.Instantiate(template).Hide();
 		}
+
+		public override GameObject Get()
+		{
+			return base.Get().Show();
+		}
 	}
 }

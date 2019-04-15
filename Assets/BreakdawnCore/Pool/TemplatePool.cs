@@ -20,7 +20,7 @@ namespace Breakdawn.Pool
 			Init(count);
 		}
 
-		public virtual void Init(int count)
+		private void Init(int count)
 		{
 			for (int a = 0; a < count; a++)
 			{
