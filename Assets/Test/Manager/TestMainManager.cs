@@ -10,6 +10,7 @@ namespace Breakdawn.Test
 	{
 		private void Start()
 		{
+			TestUIManager.Instance.LoadPanel("Image1", 1);
 			TestUIManager.Instance.LoadPanel("Image");
 		}
 
