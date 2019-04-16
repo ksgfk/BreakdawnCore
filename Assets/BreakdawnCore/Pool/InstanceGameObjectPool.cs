@@ -4,11 +4,9 @@ using UnityEngine;
 
 namespace Breakdawn.Pool
 {
-	public class GameObjectPool : TemplatePool<GameObject>
+	public class InstanceGameObjectPool : TemplatePool<GameObject>
 	{
-		public GameObjectPool(GameObject t, int count, GameObjectFactory factory) : base(t, count, factory)
-		{
-		}
+		public InstanceGameObjectPool(GameObject t, int count, InstanceGameObjectFactory factory) : base(t, count, factory) { }
 
 		public override void Recycling(GameObject @object)
 		{

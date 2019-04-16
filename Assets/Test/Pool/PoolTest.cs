@@ -8,9 +8,8 @@ namespace Breakdawn.Test
 {
 	public class AB : TemplatePool<CD>
 	{
-		public AB()
+		public AB() : base(new CD(), 10)
 		{
-			template.a = 5;
 		}
 
 		protected override void Init(int count)
@@ -34,7 +33,7 @@ namespace Breakdawn.Test
 		public GameObject game;
 		private void Start()
 		{
-			var b = new GameObjectPool(game, 3, new GameObjectFactory(game, transform));
+			var b = new InstanceGameObjectPool(game, 3, new InstanceGameObjectFactory(game, transform));
 
 
 			var c = new AB();

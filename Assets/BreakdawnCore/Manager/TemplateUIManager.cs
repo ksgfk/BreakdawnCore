@@ -1,20 +1,23 @@
-﻿using Breakdawn.Factory;
+﻿using Breakdawn.Expansion;
+using Breakdawn.Factory;
 using Breakdawn.Singleton;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Breakdawn.Manager
 {
 	public abstract class TemplateUIManager<T> : TemplateSingleton<T> where T : class
 	{
-		protected ResourcesLoadFactory<GameObject> panels;
+		protected ResourceFactory<GameObject> panels;
 		protected string uiPrefabPath;
 		protected GameObject canvas;
+		protected Dictionary<string, GameObject> instancePanels;
 
 		protected TemplateUIManager()
 		{
 			uiPrefabPath = SetUIPrefabPath();
 			canvas = GameObject.Find("Canvas");
-			panels = new ResourcesLoadFactory<GameObject>(uiPrefabPath);
+			panels = new ResourceFactory<GameObject>(uiPrefabPath);
 		}
 
 		/// <summary>
@@ -30,8 +33,9 @@ namespace Breakdawn.Manager
 		/// <returns>UI面板实例</returns>
 		public GameObject LoadPanel(string name, bool isReset = false)
 		{
-			var panelPrefab = panels.Get(name);
+			var panelPrefab = panels.GetResource(name);
 			var panel = GameObject.Instantiate(panelPrefab, canvas.transform);
+			instancePanels.Add(name, panel);
 			if (isReset)
 			{
 				var panelRectTrans = panel.transform as RectTransform;
@@ -43,6 +47,15 @@ namespace Breakdawn.Manager
 			}
 
 			return panel;
+		}
+
+		public GameObject HidePanel(string name)
+		{
+			if (instancePanels.TryGetValue(name, out var v))
+			{
+				return v.Hide();
+			}
+			throw new System.Exception($"UIManager:不存在{name}面板");
 		}
 	}
 }

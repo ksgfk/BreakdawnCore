@@ -2,16 +2,16 @@
 
 namespace Breakdawn.Factory
 {
-	public class GameObjectFactory : TemplateFactory<GameObject>
+	public class InstanceGameObjectFactory : TemplateFactory<GameObject>
 	{
 		private Transform parent;
 
-		public GameObjectFactory(GameObject template)
+		public InstanceGameObjectFactory(GameObject template)
 		{
 			this.template = template;
 		}
 
-		public GameObjectFactory(GameObject template, Transform parent) : this(template)
+		public InstanceGameObjectFactory(GameObject template, Transform parent) : this(template)
 		{
 			this.parent = parent;
 		}
@@ -23,12 +23,8 @@ namespace Breakdawn.Factory
 
 		public GameObject SetGameObject(Vector3 t, Quaternion q, Transform p)
 		{
+			parent = p;
 			return GameObject.Instantiate(template, t, q, p);
-		}
-
-		public void SetParentOnGameObjectInit(Transform transform)
-		{
-			parent = transform;
 		}
 	}
 }

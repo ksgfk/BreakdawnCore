@@ -29,11 +29,11 @@ public class TestMainManager : TemplateMainManager
 		TestUIManager.Instance.LoadPanel("Image");
 	}
 
-	protected override void LunchDevelop() { }
+	protected override void AwakeLunchDevelop() { }
 
-	protected override void LunchProduction() { }
+	protected override void AwakeLunchProduction() { }
 
-	protected override void LunchTest() { }
+	protected override void AwakeLunchTest() { }
 }
 ```
 把主管理挂载到游戏物体上，Inspector面板中该脚本下会有个Environment选项，可以选择运行环境。

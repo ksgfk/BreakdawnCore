@@ -3,17 +3,17 @@ using UnityEngine;
 
 namespace Breakdawn.Factory
 {
-	public class ResourcesLoadFactory<T> where T : Object
+	public class ResourceFactory<T> : IResourcesFactory<T> where T : Object
 	{
 		private string path;
 		private Dictionary<string, T> pool = new Dictionary<string, T>();
 
-		public ResourcesLoadFactory(string path)
+		public ResourceFactory(string path)
 		{
 			this.path = path;
 		}
 
-		public T Get(string name)
+		public T GetResource(string name)
 		{
 			T obj;
 			if (pool.TryGetValue(name, out var v))

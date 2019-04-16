@@ -10,10 +10,6 @@ namespace Breakdawn.Pool
 		protected Stack<T> pool;
 		protected IFactory<T> factory;
 
-		public TemplatePool() : this(new T(), 10)
-		{
-		}
-
 		public TemplatePool(T t, int count)
 		{
 			template = t;
