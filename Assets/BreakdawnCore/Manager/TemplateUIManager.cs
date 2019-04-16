@@ -1,6 +1,7 @@
 ﻿using Breakdawn.Expansion;
 using Breakdawn.Factory;
 using Breakdawn.Singleton;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,7 +9,7 @@ namespace Breakdawn.Manager
 {
 	public abstract class TemplateUIManager<T> : TemplateSingleton<T> where T : class
 	{
-		protected ResourceFactory<GameObject> panels;
+		protected ISeriesFactory<string, GameObject> prefabPanels;
 		protected string uiPrefabPath;
 		protected GameObject canvas;
 		protected Dictionary<string, GameObject> instancePanels;
@@ -17,7 +18,8 @@ namespace Breakdawn.Manager
 		{
 			uiPrefabPath = SetUIPrefabPath();
 			canvas = GameObject.Find("Canvas");
-			panels = new ResourceFactory<GameObject>(uiPrefabPath);
+			prefabPanels = new ResourceFactory<GameObject>(uiPrefabPath);
+			instancePanels = new Dictionary<string, GameObject>();
 		}
 
 		/// <summary>
@@ -33,9 +35,10 @@ namespace Breakdawn.Manager
 		/// <returns>UI面板实例</returns>
 		public GameObject LoadPanel(string name, bool isReset = false)
 		{
-			var panelPrefab = panels.GetResource(name);
+			var panelPrefab = prefabPanels.GetElement(name);
 			var panel = GameObject.Instantiate(panelPrefab, canvas.transform);
 			instancePanels.Add(name, panel);
+
 			if (isReset)
 			{
 				var panelRectTrans = panel.transform as RectTransform;
@@ -55,7 +58,20 @@ namespace Breakdawn.Manager
 			{
 				return v.Hide();
 			}
-			throw new System.Exception($"UIManager:不存在{name}面板");
+			throw new Exception($"UIManager异常:不存在{name}面板实例");
+		}
+
+		public void DestoryInstancePanel(string name)
+		{
+			if (instancePanels.TryGetValue(name, out var v))
+			{
+				GameObject.Destroy(v);
+				instancePanels.Remove(name);
+			}
+			else
+			{
+				throw new Exception($"UIManager异常:不存在{name}面板实例");
+			}
 		}
 	}
 }

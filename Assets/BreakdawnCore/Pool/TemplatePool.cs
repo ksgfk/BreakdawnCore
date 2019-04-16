@@ -6,21 +6,18 @@ namespace Breakdawn.Pool
 {
 	public abstract class TemplatePool<T> : IObjectPool<T> where T : new()
 	{
-		protected T template;
 		protected Stack<T> pool;
 		protected IFactory<T> factory;
 
-		public TemplatePool(T t, int count)
+		public TemplatePool(int count)
 		{
-			template = t;
-			factory = new NormalFactory<T>(template);
+			factory = new NormalFactory<T>();
 			pool = new Stack<T>(count);
 			Init(count);
 		}
 
-		public TemplatePool(T t, int count, IFactory<T> factory)
+		public TemplatePool(int count, IFactory<T> factory)
 		{
-			template = t;
 			this.factory = factory;
 			pool = new Stack<T>(count);
 			Init(count);

@@ -6,7 +6,7 @@ namespace Breakdawn.Pool
 {
 	public class InstanceGameObjectPool : TemplatePool<GameObject>
 	{
-		public InstanceGameObjectPool(GameObject t, int count, InstanceGameObjectFactory factory) : base(t, count, factory) { }
+		public InstanceGameObjectPool(int count, InstanceGameObjectFactory factory) : base(count, factory) { }
 
 		public override void Recycling(GameObject @object)
 		{
