@@ -17,7 +17,7 @@ namespace Breakdawn.Manager
 		protected TemplateUIManager()
 		{
 			uiPrefabPath = SetUIPrefabPath();
-			canvas = GameObject.Find("Canvas");
+			canvas = GameObject.Find("Canvas") ?? throw new Exception($"UI Manager异常:请在Hierarchy面板创建一个Canvas");
 			prefabPanels = new ResourceFactory<GameObject>(uiPrefabPath);
 			instancePanels = new Dictionary<string, GameObject>();
 		}
