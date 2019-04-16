@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Breakdawn.Singleton;
+using System;
+using System.Linq;
+using System.Reflection;
 using UnityEngine;
 
 namespace Breakdawn.Manager
@@ -8,8 +11,7 @@ namespace Breakdawn.Manager
 	/// </summary>
 	public abstract class TemplateMainManager : MonoBehaviour
 	{
-		protected Environment environment = Environment.Develop;
-		public Environment Environment { get => environment; }
+		public Environment environment = Environment.Develop;
 
 		private static Environment mSharedENV;
 		private static bool mIsENVSetted = false;
@@ -25,23 +27,39 @@ namespace Breakdawn.Manager
 			switch (mSharedENV)
 			{
 				case Environment.Develop:
-					LunchDevelop();
+					CheckSingleton();
+					AwakeLunchDevelop();
 					break;
 				case Environment.Production:
-					LunchProduction();
+					AwakeLunchProduction();
 					break;
 				case Environment.Test:
-					LunchTest();
+					AwakeLunchTest();
 					break;
 				default:
 					throw new Exception($"初始化错误:How can it be!{environment}");
 			}
 		}
 
-		protected abstract void LunchDevelop();
+		protected abstract void AwakeLunchDevelop();
 
-		protected abstract void LunchProduction();
+		protected abstract void AwakeLunchProduction();
 
-		protected abstract void LunchTest();
+		protected abstract void AwakeLunchTest();
+
+		private void CheckSingleton()
+		{
+			var classes = Assembly.GetExecutingAssembly().GetTypes();
+			var types = from need in classes where need.IsDefined(typeof(SingletonAttribute)) select need;
+			foreach (var item in types)
+			{
+				var constructors = item.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+				if (constructors.Count() != 1)
+					Debug.LogError($"单例异常:{constructors}只能有一个构造函数!");
+				var constructor = constructors.SingleOrDefault(c => c.GetParameters().Count() == 0 && c.IsPrivate);
+				if (constructor == null)
+					Debug.LogError($"单例异常:{item}的构造函数必须是私有且无参");
+			}
+		}
 	}
 }

@@ -3,11 +3,8 @@
 namespace Breakdawn.Singleton
 {
 	/// <summary>
-	/// 完全没啥用...单例根本不需要接口、特性一类的东西吧
+	/// 创建单例时使用该特性,用于开发环境下检查单例创建是否正确
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class)]
-	public class SingletonAttribute : Attribute
-	{
-
-	}
+	public class SingletonAttribute : Attribute { }
 }

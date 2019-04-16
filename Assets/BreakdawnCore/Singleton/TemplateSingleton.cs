@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Linq;
-using System.Reflection;
 
 namespace Breakdawn.Singleton
 {
@@ -12,13 +10,10 @@ namespace Breakdawn.Singleton
 	{
 		private static readonly Lazy<T> instance = new Lazy<T>(() =>
 		{
-			var constructors = typeof(T).GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-			if (constructors.Count() != 1)
-				throw new Exception($"单例异常:{typeof(T)}只能有一个构造函数!");
-			var constructor = constructors.SingleOrDefault(c => c.GetParameters().Count() == 0 && c.IsPrivate);
-			if (constructor == null)
-				throw new Exception($"单例异常:{typeof(T)}的构造函数必须是私有且无参");
-			return constructor.Invoke(null) as T;
+			var type = typeof(T);
+			if (type.IsDefined(typeof(SingletonAttribute), true))
+				return Activator.CreateInstance(type, true) as T;
+			throw new Exception($"单例异常:请在单例类{type}上加上SingletonAttribute特性");
 		}, true);
 
 		public static T Instance { get => instance.Value; }

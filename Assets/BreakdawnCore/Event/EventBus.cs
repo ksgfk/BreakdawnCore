@@ -7,9 +7,10 @@ namespace Breakdawn.Event
 	/// <summary>
 	/// 事件总线，管理所有事件
 	/// </summary>
-	public class EventBus : TemplateSingleton<EventBus>
+	[Singleton]
+	public sealed class EventBus : TemplateSingleton<EventBus>
 	{
-		private readonly Dictionary<string, object> factory = new Dictionary<string, object>();
+		private readonly Dictionary<string, object> factory = new Dictionary<string, object>();//TODO:感觉用string来储存还是太emm,但是又想不到更好的
 
 		private EventBus() { }
 

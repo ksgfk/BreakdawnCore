@@ -75,6 +75,7 @@ d(233);
 就可以在控制台输出`跨脚本通信:233`了。
 
 ## BE CAREFUL/注意
-如果调用`EventBus.Instance.RemoveEvents();`的时候，指定的泛型与想调用的委托集合不匹配，会出现空引用异常（NullReferenceException）。
+* 调用`EventBus.Instance`里的方法时，如果指定的泛型与想调用的委托集合的泛型不匹配，会出现空引用异常（NullReferenceException）。
+* 当委托集合的泛型ACT为Func一系的类型时，不可以用同一个名字进行注册，调用时只会执行最后一个注册的事件。
 
 [1]:https://github.com/ksgfk/BreakdawnCore/blob/master/Assets/BreakdawnCore/Event/TempletEvents.cs
