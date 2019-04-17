@@ -30,7 +30,14 @@ namespace Breakdawn.Core
 		{
 			var panelPrefab = prefabPanels.GetElement(name);
 			var panel = GameObject.Instantiate(panelPrefab, canvas.transform);
-			instancePanels.Add(name, panel);
+			if (instancePanels.ContainsKey(name))
+			{
+				throw new Exception($"UI Manager异常:预制体{panelPrefab}已经被实例化了");
+			}
+			else
+			{
+				instancePanels.Add(name, panel);
+			}
 			var panelRectTrans = panel.transform as RectTransform ?? throw new Exception($"UI Manager异常:预制体{panelPrefab}可能不是UI");
 			panelRectTrans.SetSiblingIndex(layer);
 

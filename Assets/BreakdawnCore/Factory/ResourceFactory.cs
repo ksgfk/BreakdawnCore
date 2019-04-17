@@ -1,32 +1,38 @@
 ﻿using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 namespace Breakdawn.Core
 {
 	public class ResourceFactory<T> : ISeriesFactory<string, T> where T : Object
 	{
-		private string path;
 		private Dictionary<string, T> pool = new Dictionary<string, T>();
+		private StringBuilder buffer;
 
-		public ResourceFactory(string path)
+		public ResourceFactory(params string[] paths)
 		{
-			this.path = path;
+			buffer = new StringBuilder();
+			foreach (var path in paths)
+			{
+				buffer.Append(path).Append("/");
+			}
 		}
 
 		public T GetElement(string name)
 		{
 			T obj;
-			if (pool.TryGetValue(name, out var v))
+			var resPath = buffer.Append(name).ToString();
+			if (pool.TryGetValue(resPath, out var v))
 			{
 				obj = v;
 			}
 			else
 			{
-				var resPath = $"{path}/{name}";
 				var res = Resources.Load<T>(resPath);
 				obj = res ?? throw new System.Exception($"资源池异常:无法找到路径为{resPath}的资源");
-				pool.Add(name, obj);
+				pool.Add(resPath, obj);
 			}
+			buffer.Remove(buffer.Length - name.Length, name.Length);
 			return obj;
 		}
 

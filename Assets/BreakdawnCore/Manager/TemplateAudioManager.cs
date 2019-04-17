@@ -10,5 +10,11 @@ namespace Breakdawn.Core
 		{
 			audioClips = audioClipsFactory;
 		}
+
+		public void PlaySound(AudioSource source, string name, ulong delay = 0)
+		{
+			source.clip = audioClips.GetElement(name);
+			source.Play(delay);
+		}
 	}
 }

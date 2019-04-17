@@ -8,7 +8,7 @@ namespace Breakdawn.Test
 		private void Start()
 		{
 			TestUIManager.Instance.LoadPanel("Image1", 1);
-			TestUIManager.Instance.LoadPanel("Image");
+			TestUIManager.Instance.LoadPanel("Image1", 2);
 		}
 
 		protected override void AwakeLunchDevelop()
