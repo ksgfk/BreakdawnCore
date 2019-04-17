@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Breakdawn.Singleton
+namespace Breakdawn.Core
 {
 	/// <summary>
 	/// 单例模板

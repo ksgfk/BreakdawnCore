@@ -1,8 +1,4 @@
-﻿using Breakdawn.Factory;
-using Breakdawn.Manager;
-using Breakdawn.Singleton;
-using System.Collections;
-using System.Collections.Generic;
+﻿using Breakdawn.Core;
 using UnityEngine;
 
 namespace Breakdawn.Test

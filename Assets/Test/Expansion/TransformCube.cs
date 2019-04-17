@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
-using Breakdawn.Expansion;
 using System;
-using Breakdawn.Event;
+using Breakdawn.Core;
 
 namespace Breakdawn.Test
 {

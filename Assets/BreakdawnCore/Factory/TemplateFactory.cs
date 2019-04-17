@@ -1,4 +1,4 @@
-﻿namespace Breakdawn.Factory
+﻿namespace Breakdawn.Core
 {
 	public abstract class TemplateFactory<T> : IFactory<T>
 	{

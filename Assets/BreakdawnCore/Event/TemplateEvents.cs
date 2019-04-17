@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Breakdawn.Event
+namespace Breakdawn.Core
 {
 	public class TemplateEvents<T, ACT> : IEvent<T, ACT> where ACT : Delegate
 	{
@@ -9,7 +9,7 @@ namespace Breakdawn.Event
 
 		public TemplateEvents(string name)
 		{
-			EventBus.Instance.AddEvents(this, name);
+			EventBus.AddEvents(this, name);
 		}
 
 		public ACT GetEvent(T @event)

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Breakdawn.Factory
+namespace Breakdawn.Core
 {
 	public class EntrustFactory<T> : IFactory<T> where T : new()
 	{

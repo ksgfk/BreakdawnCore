@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace Breakdawn.Factory
+namespace Breakdawn.Core
 {
 	public class ResourceFactory<T> : ISeriesFactory<string, T> where T : Object
 	{

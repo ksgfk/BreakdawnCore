@@ -1,10 +1,10 @@
-﻿using Breakdawn.Singleton;
+﻿using Breakdawn.Core;
 using System;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
-namespace Breakdawn.Manager
+namespace Breakdawn.Core
 {
 	/// <summary>
 	/// 管理游戏所有入口和启动流程

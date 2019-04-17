@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Breakdawn.Singleton
+namespace Breakdawn.Core
 {
 	/// <summary>
 	/// 创建单例时使用该特性,用于开发环境下检查单例创建是否正确

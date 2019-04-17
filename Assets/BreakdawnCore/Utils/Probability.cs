@@ -4,7 +4,7 @@ using System.Linq;
 using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 
-namespace Breakdawn.Utils
+namespace Breakdawn.Core
 {
 	public enum Precision
 	{

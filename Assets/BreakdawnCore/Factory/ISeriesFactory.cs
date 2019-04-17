@@ -1,4 +1,4 @@
-﻿namespace Breakdawn.Factory
+﻿namespace Breakdawn.Core
 {
 	public interface ISeriesFactory<K, V>
 	{

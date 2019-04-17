@@ -1,4 +1,4 @@
-﻿namespace Breakdawn.Expansion
+﻿namespace Breakdawn.Core
 {
 	/// <summary>
 	/// 协程执行需要返回值的方法时实例化

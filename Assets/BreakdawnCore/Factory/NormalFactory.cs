@@ -1,4 +1,4 @@
-﻿namespace Breakdawn.Factory
+﻿namespace Breakdawn.Core
 {
 	public class NormalFactory<T> : IFactory<T> where T : new()
 	{

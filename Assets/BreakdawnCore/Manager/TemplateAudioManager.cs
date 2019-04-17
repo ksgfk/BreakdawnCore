@@ -1,8 +1,6 @@
-﻿using Breakdawn.Factory;
-using Breakdawn.Singleton;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace Breakdawn.Manager
+namespace Breakdawn.Core
 {
 	public abstract class TemplateAudioManager<T> : TemplateSingleton<T> where T : class
 	{

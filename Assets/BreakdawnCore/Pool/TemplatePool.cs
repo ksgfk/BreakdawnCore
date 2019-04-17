@@ -1,8 +1,8 @@
-﻿using Breakdawn.Factory;
+﻿using Breakdawn.Core;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Breakdawn.Pool
+namespace Breakdawn.Core
 {
 	public abstract class TemplatePool<T> : IObjectPool<T> where T : new()
 	{

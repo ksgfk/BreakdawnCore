@@ -2,7 +2,7 @@
 using System.Collections;
 using UnityEngine;
 
-namespace Breakdawn.Expansion
+namespace Breakdawn.Core
 {
 	public static class MonoBehaviourExpansion
 	{

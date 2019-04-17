@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Breakdawn.Event
+namespace Breakdawn.Core
 {
 	public interface IEvent<T, A> where A : Delegate
 	{

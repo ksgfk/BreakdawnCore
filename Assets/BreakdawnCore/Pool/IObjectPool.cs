@@ -1,4 +1,4 @@
-﻿namespace Breakdawn.Pool
+﻿namespace Breakdawn.Core
 {
 	public interface IObjectPool<T>
 	{

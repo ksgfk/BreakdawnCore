@@ -4,7 +4,7 @@ using System.IO;
 using UnityEngine;
 using UnityEditor;
 
-namespace Breakdawn.Utils
+namespace Breakdawn.Core
 {
 	public class AutoExportAssetPackage
 	{

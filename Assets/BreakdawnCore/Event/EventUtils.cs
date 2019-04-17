@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Breakdawn.Event
+namespace Breakdawn.Core
 {
 	public static class EventUtils
 	{

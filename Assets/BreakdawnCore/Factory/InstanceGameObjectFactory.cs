@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Breakdawn.Factory
+namespace Breakdawn.Core
 {
 	public class InstanceGameObjectFactory : IFactory<GameObject>
 	{

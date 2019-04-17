@@ -1,8 +1,6 @@
-﻿using Breakdawn.Expansion;
-using Breakdawn.Factory;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace Breakdawn.Pool
+namespace Breakdawn.Core
 {
 	public class InstanceGameObjectPool : TemplatePool<GameObject>
 	{

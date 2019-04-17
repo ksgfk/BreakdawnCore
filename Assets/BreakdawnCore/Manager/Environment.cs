@@ -1,4 +1,4 @@
-﻿namespace Breakdawn.Manager
+﻿namespace Breakdawn.Core
 {
 	public enum Environment
 	{

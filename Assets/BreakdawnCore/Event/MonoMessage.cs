@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Breakdawn.Event
+namespace Breakdawn.Core
 {
 	public abstract class MonoMessage<ACT> : MonoBehaviour, IEvent<string, ACT> where ACT : Delegate
 	{
@@ -10,13 +10,13 @@ namespace Breakdawn.Event
 
 		private void Awake()
 		{
-			EventBus.Instance.AddEvents(this, ToString());
+			EventBus.AddEvents(this, ToString());
 		}
 
 		private void OnDestroy()
 		{
 			OnBeforeDestroy();
-			EventBus.Instance.RemoveEvents(ToString());
+			EventBus.RemoveEvents(ToString());
 			events.Clear();
 		}
 		/// <summary>

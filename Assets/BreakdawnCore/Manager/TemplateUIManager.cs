@@ -1,12 +1,9 @@
-﻿using Breakdawn.Expansion;
-using Breakdawn.Factory;
-using Breakdawn.Singleton;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Breakdawn.Manager
+namespace Breakdawn.Core
 {
 	public abstract class TemplateUIManager<T> : TemplateSingleton<T> where T : class
 	{
