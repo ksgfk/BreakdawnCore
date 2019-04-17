@@ -1,4 +1,5 @@
-﻿using Breakdawn.Manager;
+﻿using Breakdawn.Factory;
+using Breakdawn.Manager;
 using Breakdawn.Singleton;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,11 +10,6 @@ namespace Breakdawn.Test
 	[Singleton]
 	public class TestUIManager : TemplateUIManager<TestUIManager>
 	{
-		private TestUIManager() { }
-
-		protected override string SetUIPrefabPath()
-		{
-			return "UIPanel";
-		}
+		private TestUIManager() : base(new ResourceFactory<GameObject>("UIPanel")) { }
 	}
 }

@@ -4,29 +4,24 @@ using Breakdawn.Singleton;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Breakdawn.Manager
 {
 	public abstract class TemplateUIManager<T> : TemplateSingleton<T> where T : class
 	{
 		protected ISeriesFactory<string, GameObject> prefabPanels;
-		protected string uiPrefabPath;
-		protected GameObject canvas;
 		protected Dictionary<string, GameObject> instancePanels;
+		protected GameObject canvas;
+		protected CanvasScaler canvasScaler;
 
-		protected TemplateUIManager()
+		protected TemplateUIManager(ISeriesFactory<string, GameObject> panelsFactory)
 		{
-			uiPrefabPath = SetUIPrefabPath();
 			canvas = GameObject.Find("Canvas") ?? throw new Exception($"UI Manager异常:请在Hierarchy面板创建一个Canvas");
-			prefabPanels = new ResourceFactory<GameObject>(uiPrefabPath);
+			canvasScaler = canvas.GetComponent<CanvasScaler>();
+			prefabPanels = panelsFactory;
 			instancePanels = new Dictionary<string, GameObject>();
 		}
-
-		/// <summary>
-		/// UI预制体在Resources文件夹下的路径
-		/// </summary>
-		protected abstract string SetUIPrefabPath();
-
 		/// <summary>
 		/// 加载UI面板
 		/// </summary>
@@ -74,6 +69,12 @@ namespace Breakdawn.Manager
 			{
 				throw new Exception($"UIManager异常:不存在{name}面板实例");
 			}
+		}
+
+		public void SetCanvasResolution(float width, float height, float matchWidthOrHeight)
+		{
+			canvasScaler.referenceResolution = new Vector2(width, height);
+			canvasScaler.matchWidthOrHeight = matchWidthOrHeight;
 		}
 	}
 }
