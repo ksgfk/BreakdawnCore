@@ -11,6 +11,7 @@ namespace Breakdawn.Core
 		private void Awake()
 		{
 			EventBus.AddEvents(this, ToString());
+			OnAwakeing();
 		}
 
 		private void OnDestroy()
@@ -23,6 +24,11 @@ namespace Breakdawn.Core
 		/// 用来代替OnDestroy，子类中最好不要使用OnDestroy
 		/// </summary>
 		public abstract void OnBeforeDestroy();
+
+		/// <summary>
+		/// 用来代替Awake，子类中最好不要使用Awake
+		/// </summary>
+		public abstract void OnAwakeing();
 
 		public ACT GetEvent(string @event)
 		{

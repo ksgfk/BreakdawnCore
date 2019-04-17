@@ -22,5 +22,10 @@ namespace Breakdawn.Test
 		{
 
 		}
+
+		public override void OnAwakeing()
+		{
+			
+		}
 	}
 }

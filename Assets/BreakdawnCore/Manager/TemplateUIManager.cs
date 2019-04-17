@@ -32,7 +32,7 @@ namespace Breakdawn.Core
 			var panel = GameObject.Instantiate(panelPrefab, canvas.transform);
 			if (instancePanels.ContainsKey(name))
 			{
-				throw new Exception($"UI Manager异常:预制体{panelPrefab}已经被实例化了");
+				throw new Exception($"UI Manager异常:UI面板{panelPrefab}已经被实例化了");
 			}
 			else
 			{

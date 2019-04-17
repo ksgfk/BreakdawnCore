@@ -1,5 +1,7 @@
 ﻿using Breakdawn.Core;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Breakdawn.Test
@@ -29,9 +31,9 @@ namespace Breakdawn.Test
 			//b(233);
 			//var c = EventBus.Instance.GetEvents<MyEventTest, Func<int>>("myNoParmaR").GetEvent(MyEventTest.A);
 			//Debug.Log(c());
-			var d = EventBus.GetEvents<string, Action<object>>(StringPool.MonoMessageToString);
-			var e = d.GetEvent("Hello");
-			e(1);
+			//var d = EventBus.Instance.GetEvents<string, Action<object>>(StringPool.MonoMessageToString);
+			//var e = d.GetEvent("Hello");
+			//e(1);
 		}
 
 		private void Hello(int a)
