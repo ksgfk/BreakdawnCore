@@ -3,7 +3,8 @@ using UnityEngine;
 
 namespace Breakdawn.Test
 {
-	public class TestMainManager : TemplateMainManager
+	[Singleton]
+	public class TestMainManager : TemplateMainManager<TestMainManager>
 	{
 		private void Start()
 		{

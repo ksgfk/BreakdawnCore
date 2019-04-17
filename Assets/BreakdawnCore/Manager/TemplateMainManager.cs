@@ -1,5 +1,4 @@
-﻿using Breakdawn.Core;
-using System;
+﻿using System;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
@@ -9,7 +8,7 @@ namespace Breakdawn.Core
 	/// <summary>
 	/// 管理游戏所有入口和启动流程
 	/// </summary>
-	public abstract class TemplateMainManager : MonoBehaviour
+	public abstract class TemplateMainManager<T> : MonoSingleton<T> where T : MonoSingleton<T>
 	{
 		public Environment environment = Environment.Develop;
 
@@ -53,6 +52,30 @@ namespace Breakdawn.Core
 			var types = from need in classes where need.IsDefined(typeof(SingletonAttribute)) select need;
 			foreach (var item in types)
 			{
+				var t = item.BaseType;
+				var isCon = false;
+				while (true)
+				{
+					if (t != typeof(MonoBehaviour))
+					{
+						t = t.BaseType;
+						isCon = true;
+						break;
+					}
+					else if (t == null)
+					{
+						isCon = false;
+						break;
+					}
+					else
+					{
+						t = t.BaseType;
+					}
+				}
+				if (isCon)
+					continue;
+				if (item.IsAbstract)
+					Debug.LogError($"单例异常:{item}是抽象类,不能实例化,不需要SingletonAttribute特性");
 				var constructors = item.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 				if (constructors.Count() != 1)
 					Debug.LogError($"单例异常:{constructors}只能有一个构造函数!");
