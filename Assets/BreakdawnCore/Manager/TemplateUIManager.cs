@@ -5,6 +5,10 @@ using UnityEngine.UI;
 
 namespace Breakdawn.Core
 {
+	/// <summary>
+	/// 管理所有UI
+	/// </summary>
+	/// <typeparam name="T">继承本类的类</typeparam>
 	public abstract class TemplateUIManager<T> : TemplateSingleton<T> where T : class
 	{
 		protected ISeriesFactory<string, GameObject> prefabPanels;

@@ -8,6 +8,7 @@ namespace Breakdawn.Core
 	/// <summary>
 	/// 管理游戏所有入口和启动流程
 	/// </summary>
+	/// <typeparam name="T">继承本类的类</typeparam>
 	public abstract class TemplateMainManager<T> : MonoSingleton<T> where T : MonoSingleton<T>
 	{
 		public Environment environment = Environment.Develop;
