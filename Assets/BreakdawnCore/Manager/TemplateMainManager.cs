@@ -24,6 +24,8 @@ namespace Breakdawn.Core
 				mIsENVSetted = true;
 			}
 
+			Debug.Log($"Main Manager:当前模式{mSharedENV}");
+
 			switch (mSharedENV)
 			{
 				case Environment.Develop:
@@ -41,11 +43,77 @@ namespace Breakdawn.Core
 			}
 		}
 
+		private void Start()
+		{
+			switch (mSharedENV)
+			{
+				case Environment.Develop:
+					StartDevelop();
+					break;
+				case Environment.Production:
+					StartProduction();
+					break;
+				case Environment.Test:
+					StartTest();
+					break;
+				default:
+					break;
+			}
+		}
+
+		private void Update()
+		{
+			switch (mSharedENV)
+			{
+				case Environment.Develop:
+					UpdateDevelop();
+					break;
+				case Environment.Production:
+					UpdateProduction();
+					break;
+				case Environment.Test:
+					UpdateTest();
+					break;
+				default:
+					break;
+			}
+		}
+
+		private void FixedUpdate()
+		{
+			switch (mSharedENV)
+			{
+				case Environment.Develop:
+					FixedUpdateDevelop();
+					break;
+				case Environment.Production:
+					FixedUpdateProduction();
+					break;
+				case Environment.Test:
+					FixedUpdateTest();
+					break;
+				default:
+					break;
+			}
+		}
+
 		protected abstract void AwakeLunchDevelop();
 
 		protected abstract void AwakeLunchProduction();
 
 		protected abstract void AwakeLunchTest();
+
+		protected virtual void StartDevelop() { }
+		protected virtual void StartProduction() { }
+		protected virtual void StartTest() { }
+
+		protected virtual void UpdateDevelop() { }
+		protected virtual void UpdateProduction() { }
+		protected virtual void UpdateTest() { }
+
+		protected virtual void FixedUpdateDevelop() { }
+		protected virtual void FixedUpdateProduction() { }
+		protected virtual void FixedUpdateTest() { }
 
 		private void CheckSingleton()
 		{

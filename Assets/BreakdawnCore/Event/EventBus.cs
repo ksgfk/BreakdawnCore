@@ -19,7 +19,6 @@ namespace Breakdawn.Core
 		public static IEvent<T, ACT> CreateEvents<T, ACT>(string name) where ACT : Delegate
 		{
 			var n = new TemplateEvents<T, ACT>(name);
-			Instance.factory.Add(name, n);
 			return n;
 		}
 		/// <summary>

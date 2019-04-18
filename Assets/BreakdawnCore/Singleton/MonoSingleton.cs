@@ -5,19 +5,17 @@ namespace Breakdawn.Core
 {
 	public class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T>
 	{
-		protected static T instance;
+		private static T instance;
 
 		public static T Instance
 		{
 			get
 			{
-				T i;
-				i = instance ?? FindObjectOfType<T>();
-				if (i == null)
+				if (instance == null)
 				{
-					throw new Exception($"单例异常:无法找到挂载在了{typeof(T)}脚本的物体");
+					instance = FindObjectOfType<T>();
 				}
-				return i;
+				return instance ?? throw new Exception($"单例异常:Hierarchy面板中可能没有物体挂在了{typeof(T)}");
 			}
 		}
 	}
