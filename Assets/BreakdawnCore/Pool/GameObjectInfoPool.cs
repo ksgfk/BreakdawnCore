@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Breakdawn.Core
 {
-	public class GameObjectInfoPool
+	public class GameObjectInfoPool : ISeriesPool<GameObject, string>
 	{
 		private Dictionary<string, Stack<GameObject>> gameObjectsPools;
 		private Dictionary<GameObject, Rigidbody> rigidbodys;
