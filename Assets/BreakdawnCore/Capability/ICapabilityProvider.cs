@@ -5,8 +5,8 @@
 	/// </summary>
 	public interface ICapabilityProvider
 	{
-		T GetCapability<T>() where T : class, ICapability<T>;
+		T GetProperty<T>() where T : class, IPropertyCapability<T>;
 
-		void SetCustomCapability<T>(T capability) where T : class, ICapability<T>;
+		void AddCustomProperty<T>(T capability) where T : class, IPropertyCapability<T>;
 	}
 }
