@@ -11,11 +11,18 @@ namespace Breakdawn.Core
 		{
 			get
 			{
-				if (instance == null)
+				if (typeof(T).IsDefined(typeof(SingletonAttribute), true))
 				{
-					instance = FindObjectOfType<T>();
+					if (instance == null)
+					{
+						instance = FindObjectOfType<T>();
+					}
+					return instance ?? throw new Exception($"单例异常:Hierarchy面板中可能没有物体挂载了{typeof(T)}");
 				}
-				return instance ?? throw new Exception($"单例异常:Hierarchy面板中可能没有物体挂在了{typeof(T)}");
+				else
+				{
+					throw new Exception($"单例异常:请给{typeof(T)}加上Singleton特性!");
+				}
 			}
 		}
 	}

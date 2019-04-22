@@ -18,6 +18,7 @@ namespace Breakdawn.Core
 
 		private void Awake()
 		{
+			DontDestroyOnLoad(this);
 			if (!mIsENVSetted)
 			{
 				mSharedENV = environment;
@@ -117,40 +118,28 @@ namespace Breakdawn.Core
 
 		private void CheckSingleton()
 		{
-			var classes = Assembly.GetExecutingAssembly().GetTypes();
-			var types = from need in classes where need.IsDefined(typeof(SingletonAttribute)) select need;
-			foreach (var item in types)
+			var classes = AppDomain.CurrentDomain.GetAssemblies();
+			foreach (var mClass in classes)
 			{
-				var t = item.BaseType;
-				var isCon = false;
-				while (true)
+				var types = from need in mClass.GetTypes() where need.IsDefined(typeof(SingletonAttribute)) select need;
+				foreach (var item in types)
 				{
-					if (t != typeof(MonoBehaviour))
+					if (item.IsSubclassOf(typeof(MonoBehaviour)))
 					{
-						t = t.BaseType;
-						isCon = true;
-						break;
+						var res = FindObjectsOfType(item);
+						if (res.Count() != 1)
+							Debug.LogError($"单例异常:{item}只能有一个挂载在Hierarchy面板!");
+						continue;
 					}
-					else if (t == null)
-					{
-						isCon = false;
-						break;
-					}
-					else
-					{
-						t = t.BaseType;
-					}
+					if (item.IsAbstract)
+						Debug.LogError($"单例异常:{item}是抽象类,不能实例化,不需要SingletonAttribute特性");
+					var constructors = item.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+					if (constructors.Count() != 1)
+						Debug.LogError($"单例异常:{constructors}只能有一个构造函数!");
+					var constructor = constructors.SingleOrDefault(c => c.GetParameters().Count() == 0 && c.IsPrivate);
+					if (constructor == null)
+						Debug.LogError($"单例异常:{item}的构造函数必须是私有且无参");
 				}
-				if (isCon)
-					continue;
-				if (item.IsAbstract)
-					Debug.LogError($"单例异常:{item}是抽象类,不能实例化,不需要SingletonAttribute特性");
-				var constructors = item.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-				if (constructors.Count() != 1)
-					Debug.LogError($"单例异常:{constructors}只能有一个构造函数!");
-				var constructor = constructors.SingleOrDefault(c => c.GetParameters().Count() == 0 && c.IsPrivate);
-				if (constructor == null)
-					Debug.LogError($"单例异常:{item}的构造函数必须是私有且无参");
 			}
 		}
 	}
