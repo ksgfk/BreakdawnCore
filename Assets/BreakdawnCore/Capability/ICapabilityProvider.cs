@@ -1,12 +1,22 @@
-﻿namespace Breakdawn.Core
+﻿using System.Collections.Generic;
+
+namespace Breakdawn.Core
 {
 	/// <summary>
 	/// 能力提供者,有能力组件的类实现该接口
 	/// </summary>
 	public interface ICapabilityProvider
 	{
-		T GetProperty<T>() where T : class, IPropertyCapability<T>;
+		IEnumerable<ILogicCapability> GetLogics();
 
-		void AddCustomProperty<T>(T capability) where T : class, IPropertyCapability<T>;
+		IEnumerable<IPhysicLogicCapability> GetPhysicLogics();
+
+		void AddLogic(ILogicCapability logic);
+
+		void AddPhysicLogic(IPhysicLogicCapability physicLogic);
+
+		bool HasLogic(string name);
+
+		bool HasPhysicLogic(string name);
 	}
 }
