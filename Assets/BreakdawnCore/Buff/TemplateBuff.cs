@@ -2,9 +2,6 @@
 
 namespace Breakdawn.Core
 {
-	/// <summary>
-	/// Buff的逻辑过程
-	/// </summary>
 	public abstract class TemplateBuff : IBuff
 	{
 		public string Name { get; }

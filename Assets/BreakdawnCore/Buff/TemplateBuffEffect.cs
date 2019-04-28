@@ -3,9 +3,6 @@ using UnityEngine;
 
 namespace Breakdawn.Core
 {
-	/// <summary>
-	/// 真正实例化的Buff
-	/// </summary>
 	public abstract class TemplateBuffEffect : IBuffEffect
 	{
 		public IBuff Buff { get; }
