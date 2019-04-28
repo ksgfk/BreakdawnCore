@@ -13,7 +13,17 @@ namespace Breakdawn.Core
 		{
 			this.reset = reset;
 			this.factory = factory;
-			pool = new Stack<T>();
+			pool = new Stack<T>(count);
+
+			Init(count);
+		}
+
+		private void Init(int count)
+		{
+			for (int i = 0; i < count; i++)
+			{
+				pool.Push(factory.Create());
+			}
 		}
 
 		public T Get()

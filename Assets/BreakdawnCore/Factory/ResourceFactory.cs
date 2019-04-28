@@ -6,8 +6,9 @@ namespace Breakdawn.Core
 {
 	public class ResourceFactory<T> : ISeriesFactory<string, T> where T : Object
 	{
-		private Dictionary<string, T> pool = new Dictionary<string, T>();
-		private StringBuilder buffer;
+		private readonly Dictionary<string, T> pool = new Dictionary<string, T>();
+		private readonly List<string> keys = new List<string>();
+		private readonly StringBuilder buffer;
 
 		public ResourceFactory(params string[] paths)
 		{
@@ -31,6 +32,7 @@ namespace Breakdawn.Core
 				var res = Resources.Load<T>(resPath);
 				obj = res ?? throw new System.Exception($"资源池异常:无法找到路径为{resPath}的资源");
 				pool.Add(resPath, obj);
+				keys.Add(resPath);
 			}
 			buffer.Remove(buffer.Length - name.Length, name.Length);
 			return obj;
@@ -48,6 +50,11 @@ namespace Breakdawn.Core
 			{
 				throw new System.Exception($"资源池异常:没有名为{name}的资源");
 			}
+		}
+
+		public IEnumerable<string> GetKeyList()
+		{
+			return keys;
 		}
 	}
 }
