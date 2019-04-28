@@ -6,7 +6,7 @@ namespace Breakdawn.Core
 	/// <summary>
 	/// (不知道有啥用
 	/// </summary>
-	public class TemplateLevelManager<T> : TemplateSingleton<T> where T : class
+	public abstract class TemplateLevelManager<T> : TemplateSingleton<T> where T : class
 	{
 		protected readonly Dictionary<string, int> sceneName4Index = new Dictionary<string, int>();
 		protected readonly List<string> sceneName;

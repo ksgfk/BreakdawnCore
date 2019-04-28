@@ -16,9 +16,8 @@ namespace Breakdawn.Core
 		private static Environment mSharedENV;
 		private static bool mIsENVSetted = false;
 
-		private void Awake()
+		protected override void OnBeforeAwake()
 		{
-			DontDestroyOnLoad(this);
 			if (!mIsENVSetted)
 			{
 				mSharedENV = environment;

@@ -26,5 +26,15 @@ namespace Breakdawn.Test
 		{
 			Debug.Log("Test");
 		}
+
+		protected override void OnBeforeAwake()
+		{
+			
+		}
+
+		protected override void OnBeforeDestory()
+		{
+			
+		}
 	}
 }

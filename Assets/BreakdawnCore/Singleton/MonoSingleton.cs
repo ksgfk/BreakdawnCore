@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Breakdawn.Core
 {
-	public class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T>
+	public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T>
 	{
 		private static T instance;
 
@@ -25,5 +25,24 @@ namespace Breakdawn.Core
 				}
 			}
 		}
+
+		private void Awake()
+		{
+			DontDestroyOnLoad(Instance.gameObject);
+			OnBeforeAwake();
+		}
+
+		protected virtual void OnBeforeAwake() { }
+
+		private void OnDestroy()
+		{
+			OnBeforeDestory();
+			instance = null;
+		}
+
+		/// <summary>
+		/// 不可覆写OnDestroy
+		/// </summary>
+		protected abstract void OnBeforeDestory();
 	}
 }
