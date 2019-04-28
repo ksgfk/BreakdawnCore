@@ -32,6 +32,9 @@ namespace Breakdawn.Core
 			OnBeforeAwake();
 		}
 
+		/// <summary>
+		/// 不可覆写Awake
+		/// </summary>
 		protected virtual void OnBeforeAwake() { }
 
 		private void OnDestroy()
@@ -43,6 +46,6 @@ namespace Breakdawn.Core
 		/// <summary>
 		/// 不可覆写OnDestroy
 		/// </summary>
-		protected abstract void OnBeforeDestory();
+		protected virtual void OnBeforeDestory() { }
 	}
 }
