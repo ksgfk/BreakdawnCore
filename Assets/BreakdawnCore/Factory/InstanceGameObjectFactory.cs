@@ -2,6 +2,7 @@
 
 namespace Breakdawn.Core
 {
+	[System.Obsolete("用EntrustFactory")]
 	public class InstanceGameObjectFactory : IFactory<GameObject>
 	{
 		private GameObject template;

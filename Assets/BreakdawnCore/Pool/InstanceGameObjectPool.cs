@@ -2,6 +2,7 @@
 
 namespace Breakdawn.Core
 {
+	[System.Obsolete("用EntrustPool")]
 	public class InstanceGameObjectPool : TemplatePool<GameObject>
 	{
 		public InstanceGameObjectPool(int count, InstanceGameObjectFactory factory) : base(count, factory) { }

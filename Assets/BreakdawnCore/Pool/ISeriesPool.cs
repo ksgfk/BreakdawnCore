@@ -5,10 +5,10 @@
 	/// </summary>
 	/// <typeparam name="T">对象</typeparam>
 	/// <typeparam name="K">获取对象的key</typeparam>
-	public interface ISeriesPool<T, K>
+	public interface ISeriesPool<K, V>
 	{
-		T Get(K key);
+		V Get(K key);
 
-		void Recycling(K key, T @object);
+		void Recycling(K key, V @object);
 	}
 }

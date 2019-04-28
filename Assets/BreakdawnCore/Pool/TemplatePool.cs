@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace Breakdawn.Core
 {
+	[System.Obsolete("没有用")]
 	public abstract class TemplatePool<T> : IObjectPool<T> where T : new()
 	{
 		protected readonly Stack<T> pool;
@@ -10,9 +11,10 @@ namespace Breakdawn.Core
 
 		public TemplatePool(int count)
 		{
-			factory = new NormalFactory<T>();
+			//factory = new NormalFactory<T>();
 			pool = new Stack<T>(count);
 			Init(count);
+			throw new System.Exception("已弃用");
 		}
 
 		public TemplatePool(int count, IFactory<T> factory)
