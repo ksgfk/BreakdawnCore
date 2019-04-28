@@ -1,13 +1,12 @@
-﻿using Breakdawn.Core;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace Breakdawn.Core
 {
 	public abstract class TemplatePool<T> : IObjectPool<T> where T : new()
 	{
-		protected Stack<T> pool;
-		protected IFactory<T> factory;
+		protected readonly Stack<T> pool;
+		protected readonly IFactory<T> factory;
 
 		public TemplatePool(int count)
 		{
@@ -36,13 +35,15 @@ namespace Breakdawn.Core
 			return pool.Count == 0 ? Create() : pool.Pop();
 		}
 
-		public virtual void Recycling(T @object)
+		public virtual bool Recycling(T @object)
 		{
 			if (@object == null)
 			{
 				Debug.LogWarning($"对象池:对象{@object}为空");
+				return false;
 			}
 			pool.Push(@object);
+			return true;
 		}
 
 		public virtual T Create()

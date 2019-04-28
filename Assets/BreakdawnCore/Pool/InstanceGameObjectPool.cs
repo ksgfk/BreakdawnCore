@@ -6,10 +6,10 @@ namespace Breakdawn.Core
 	{
 		public InstanceGameObjectPool(int count, InstanceGameObjectFactory factory) : base(count, factory) { }
 
-		public override void Recycling(GameObject @object)
+		public override bool Recycling(GameObject @object)
 		{
 			@object.Hide();
-			base.Recycling(@object);
+			return base.Recycling(@object);
 		}
 
 		public override GameObject Create()

@@ -2,7 +2,7 @@
 
 namespace Breakdawn.Core
 {
-	public class EntrustFactory<T> : IFactory<T> where T : new()
+	public class EntrustFactory<T> : IFactory<T>
 	{
 		private Func<T> template;
 

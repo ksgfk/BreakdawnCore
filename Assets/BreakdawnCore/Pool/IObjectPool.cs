@@ -4,6 +4,6 @@
 	{
 		T Get();
 
-		void Recycling(T @object);
+		bool Recycling(T @object);
 	}
 }
