@@ -49,10 +49,13 @@ namespace Breakdawn.Core
 				}
 				v.Push(@object);
 			}
-			throw new Exception($"对象池异常:不存在{key}");
+			else
+			{
+				throw new Exception($"对象池异常:不存在{key}");
+			}
 		}
 
-		public void SetResetMethod(K key, Action<V> action)
+		public SeriesPool<K, V> SetResetMethod(K key, Action<V> action)
 		{
 			if (!pool.ContainsKey(key))
 			{
@@ -67,6 +70,7 @@ namespace Breakdawn.Core
 			{
 				resetMethods.Add(key, action);
 			}
+			return this;
 		}
 	}
 }

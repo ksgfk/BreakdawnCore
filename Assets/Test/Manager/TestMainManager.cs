@@ -6,6 +6,8 @@ namespace Breakdawn.Test
 	[Singleton]
 	public class TestMainManager : TemplateMainManager<TestMainManager>
 	{
+		private int A { get; }
+
 		private void Start()
 		{
 			TestUIManager.Instance.LoadPanel("Image1", 1);

@@ -9,11 +9,11 @@ namespace Breakdawn.Core
 		protected readonly Dictionary<K, Func<V>> factory = new Dictionary<K, Func<V>>();
 		protected readonly List<K> keys = new List<K>();
 
-		public ISeriesFactory<K, V> Add(K key, Func<V> func)
+		public SeriesFactory<K, V> Add(K key, Func<V> func)
 		{
-			if (!factory.ContainsKey(key))
+			if (factory.ContainsKey(key))
 			{
-				Debug.LogError($"对象池异常:池中已包含{key}");
+				Debug.LogError($"工厂异常:池中已包含{key}");
 				return null;
 			}
 			if (func == null)
