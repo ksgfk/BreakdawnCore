@@ -9,12 +9,13 @@ namespace Breakdawn.Core
 	public class AutoExportAssetPackage
 	{
 		public const string AssetPathName = "Assets/BreakdawnCore";
+		public const string PluginPath = "Assets/Plugins/PESocket";
 		public static readonly string RootPath = $"{Path.Combine(Application.dataPath, "../")}";
 
 		[MenuItem("Breakdawn/导出Asset Package %e")]
 		private static void MenuClicker()
 		{
-			Export();
+			Export(AssetPathName, PluginPath);
 		}
 		/// <summary>
 		/// 导出资源包,默认Assets/BreakdawnCore路径
