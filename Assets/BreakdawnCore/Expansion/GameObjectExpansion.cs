@@ -21,5 +21,15 @@ namespace Breakdawn.Core
 			gameObject.transform.ResetLocal();
 			return gameObject;
 		}
+
+		public static T AddOrGetComponent<T>(this GameObject component) where T : Component
+		{
+			var c = component.GetComponent<T>();
+			if (c == null)
+			{
+				c = component.AddComponent<T>();
+			}
+			return c;
+		}
 	}
 }
