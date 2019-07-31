@@ -40,10 +40,6 @@ namespace Breakdawn.Core
             Init();
         }
 
-        public ObjectPool(Func<T> func, int initCount = 0) : this(new ObjectFactory<T>(func), initCount)
-        {
-        }
-
         private void Init()
         {
             for (var i = 0; i < _initCount; i++)

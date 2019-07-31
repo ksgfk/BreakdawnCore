@@ -5,18 +5,13 @@ using Object = UnityEngine.Object;
 
 namespace Breakdawn.Unity
 {
-    public class GameObjectFactory : IFactory<GameObject>
+    public class GameObjectFactory : ObjectFactory<GameObject>
     {
-        private readonly GameObject _prefab;
+        public GameObject Prefab { get; }
 
-        public GameObjectFactory(GameObject prefab)
+        public GameObjectFactory(GameObject prefab) : base(() => Object.Instantiate(prefab))
         {
-            _prefab = prefab ? prefab : throw new ArgumentNullException(nameof(prefab));
-        }
-
-        public GameObject Get()
-        {
-            return Object.Instantiate(_prefab);
+            Prefab = prefab ? prefab : throw new ArgumentNullException(nameof(prefab));
         }
     }
 }
