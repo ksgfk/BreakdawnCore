@@ -10,12 +10,17 @@ namespace Breakdawn.Core
         private readonly int _initCount;
 
         /// <summary>
+        /// 初始化对象池时触发
+        /// </summary>
+        public event Action<T> OnInit;
+
+        /// <summary>
         /// 从池中获取对象时触发事件
         /// </summary>
         public event Action<T> OnGetObject;
 
         /// <summary>
-        /// 开始回收时触发事件，用于判断该对象是否可被回收
+        /// 开始回收时触发事件，用于判断该对象是否可被回收，默认不检查
         /// </summary>
         public event Func<T, bool> OnPreRecycle;
 
@@ -30,6 +35,7 @@ namespace Breakdawn.Core
         public event Action<T> OnRelease;
 
         public int InstanceCount { get; private set; }
+        public bool IsInit { get; private set; }
 
         public ObjectPool(IFactory<T> factory, int initCount = 0)
         {
@@ -37,33 +43,34 @@ namespace Breakdawn.Core
             _initCount = initCount >= 0 ? initCount : throw new ArgumentException($"{nameof(initCount)}不能小于0");
             _pool = new Stack<T>(initCount);
             InstanceCount = 0;
-            Init();
+            IsInit = false;
         }
 
-        private void Init()
+        public void Init()
         {
             for (var i = 0; i < _initCount; i++)
             {
-                _pool.Push(_factory.Get());
-                InstanceCount++;
+                var instance = GetObjectFromFactory();
+                OnInit?.Invoke(instance);
+                _pool.Push(instance);
             }
+
+            IsInit = true;
         }
 
         public T Get()
         {
-            T result;
-            if (_pool.Count > 0)
-            {
-                result = _pool.Pop();
-            }
-            else
-            {
-                result = _factory.Get();
-                InstanceCount++;
-            }
-
+            var result = _pool.Count > 0 ? _pool.Pop() : GetObjectFromFactory();
             OnGetObject?.Invoke(result);
             return result;
+        }
+
+        private T GetObjectFromFactory()
+        {
+            var get = _factory.Get();
+//            OnInit?.Invoke(get);
+            InstanceCount++;
+            return get;
         }
 
         public void Recycle(T @object)
