@@ -6,14 +6,23 @@ using UnityEngine;
 
 namespace Breakdawn.Unity
 {
+    internal class ExportConfig : ScriptableObject
+    {
+        [SerializeField] public List<string> exportPaths;
+        [SerializeField] public string targetPath;
+        [SerializeField] public string packageName;
+        [SerializeField] public string suffix;
+    }
+
     public class ExportAssetPackage : EditorWindow
     {
-        [SerializeField] private List<string> exportPaths = new List<string>();
+        [SerializeField] private List<string> exportPaths;
         private SerializedObject _serializedObject;
         private SerializedProperty _assetLstProperty;
         private string _targetPath = "";
         private string _packageName = "";
         private string _suffix = "";
+        private ExportConfig _config;
 
         [MenuItem("Breakdawn/导出Asset Package %e")]
         private static void MenuClicker()
@@ -24,6 +33,19 @@ namespace Breakdawn.Unity
 
         private void OnEnable()
         {
+            _config = AssetDatabase.LoadAssetAtPath<ExportConfig>("Assets/Resources/ExportConfig.asset");
+            if (_config != null)
+            {
+                exportPaths = _config.exportPaths;
+                _targetPath = _config.targetPath;
+                _packageName = _config.packageName;
+                _suffix = _config.suffix;
+            }
+            else
+            {
+                exportPaths = new List<string>();
+            }
+
             _serializedObject = new SerializedObject(this);
             _assetLstProperty = _serializedObject.FindProperty("exportPaths");
         }
@@ -53,6 +75,20 @@ namespace Breakdawn.Unity
 
             Export();
             Application.OpenURL(_targetPath);
+        }
+
+        private void OnDestroy()
+        {
+            if (_config == null)
+            {
+                _config = CreateInstance<ExportConfig>();
+                AssetDatabase.CreateAsset(_config, "Assets/Resources/ExportConfig.asset");
+            }
+
+            _config.suffix = _suffix;
+            _config.exportPaths = exportPaths;
+            _config.packageName = _packageName;
+            _config.targetPath = _targetPath;
         }
 
         private void Export()
