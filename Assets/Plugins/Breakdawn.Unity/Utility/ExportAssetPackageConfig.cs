@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Breakdawn.Unity
 {
-    internal class ExportConfig : ScriptableObject
+    public class ExportAssetPackageConfig : ScriptableObject
     {
         [SerializeField] public List<string> exportPaths;
         [SerializeField] public string targetPath;
@@ -14,7 +14,7 @@ namespace Breakdawn.Unity
         [SerializeField] public string suffix;
     }
 
-    public class ExportAssetPackage : EditorWindow
+    public class ExportAssetPackageWindow : EditorWindow
     {
         [SerializeField] private List<string> exportPaths;
         private SerializedObject _serializedObject;
@@ -22,24 +22,24 @@ namespace Breakdawn.Unity
         private string _targetPath = "";
         private string _packageName = "";
         private string _suffix = "";
-        private ExportConfig _config;
+        private ExportAssetPackageConfig _assetPackageConfig;
 
         [MenuItem("Breakdawn/导出Asset Package %e")]
         private static void MenuClicker()
         {
             var rect = new Rect(50, 50, 400, 400);
-            GetWindowWithRect<ExportAssetPackage>(rect, false, "导出资源包");
+            GetWindowWithRect<ExportAssetPackageWindow>(rect, false, "导出资源包");
         }
 
         private void OnEnable()
         {
-            _config = AssetDatabase.LoadAssetAtPath<ExportConfig>("Assets/Resources/ExportConfig.asset");
-            if (_config != null)
+            _assetPackageConfig = AssetDatabase.LoadAssetAtPath<ExportAssetPackageConfig>("Assets/Resources/ExportConfig.asset");
+            if (_assetPackageConfig != null)
             {
-                exportPaths = _config.exportPaths;
-                _targetPath = _config.targetPath;
-                _packageName = _config.packageName;
-                _suffix = _config.suffix;
+                exportPaths = _assetPackageConfig.exportPaths;
+                _targetPath = _assetPackageConfig.targetPath;
+                _packageName = _assetPackageConfig.packageName;
+                _suffix = _assetPackageConfig.suffix;
             }
             else
             {
@@ -79,16 +79,16 @@ namespace Breakdawn.Unity
 
         private void OnDestroy()
         {
-            if (_config == null)
+            if (_assetPackageConfig == null)
             {
-                _config = CreateInstance<ExportConfig>();
-                AssetDatabase.CreateAsset(_config, "Assets/Resources/ExportConfig.asset");
+                _assetPackageConfig = CreateInstance<ExportAssetPackageConfig>();
+                AssetDatabase.CreateAsset(_assetPackageConfig, "Assets/Resources/ExportConfig.asset");
             }
 
-            _config.suffix = _suffix;
-            _config.exportPaths = exportPaths;
-            _config.packageName = _packageName;
-            _config.targetPath = _targetPath;
+            _assetPackageConfig.suffix = _suffix;
+            _assetPackageConfig.exportPaths = exportPaths;
+            _assetPackageConfig.packageName = _packageName;
+            _assetPackageConfig.targetPath = _targetPath;
         }
 
         private void Export()
