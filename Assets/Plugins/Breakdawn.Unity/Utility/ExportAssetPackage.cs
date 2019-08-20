@@ -1,55 +1,77 @@
 ﻿#if UNITY_EDITOR
-using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
 
 namespace Breakdawn.Unity
 {
-    public class ExportAssetPackage
+    public class ExportAssetPackage : EditorWindow
     {
-        private const string AssetPathName = "Assets/BreakdawnCore";
-        private const string PluginPath = "Assets/Plugins/PESocket";
-        private static readonly string RootPath = $"{Path.Combine(Application.dataPath, "../")}";
+        [SerializeField] private List<string> exportPaths = new List<string>();
+        private SerializedObject _serializedObject;
+        private SerializedProperty _assetLstProperty;
+        private string _targetPath = "";
+        private string _packageName = "";
+        private string _suffix = "";
 
         [MenuItem("Breakdawn/导出Asset Package %e")]
         private static void MenuClicker()
         {
-            Export(AssetPathName, PluginPath);
+            var rect = new Rect(50, 50, 400, 400);
+            GetWindowWithRect<ExportAssetPackage>(rect, false, "导出资源包");
         }
 
-        /// <summary>
-        /// 导出资源包,默认Assets/BreakdawnCore路径
-        /// </summary>
-        public static void Export()
+        private void OnEnable()
         {
-            var fileName = $"BreakdawnCore_{DateTime.Now:yyyyMMdd_HHmmss}.unitypackage";
-            AssetDatabase.ExportPackage(AssetPathName, fileName, ExportPackageOptions.Recurse);
-            MoveFile(RootPath, fileName);
-            Application.OpenURL($"file://{RootPath}/Build");
+            _serializedObject = new SerializedObject(this);
+            _assetLstProperty = _serializedObject.FindProperty("exportPaths");
         }
 
-        /// <summary>
-        /// 导出资源包
-        /// </summary>
-        /// <param name="path">所有资源的路径</param>
-        public static void Export(params string[] path)
+        private void OnGUI()
         {
-            var fileName = $"BreakdawnCore_{DateTime.Now:yyyyMMdd_HHmmss}.unitypackage";
-            AssetDatabase.ExportPackage(path, fileName, ExportPackageOptions.Recurse);
-            MoveFile(RootPath, fileName);
-            Application.OpenURL($"file://{RootPath}/Build");
-        }
-
-        private static void MoveFile(string rootPath, string fileName)
-        {
-            var expFile = new FileInfo($"{rootPath}{fileName}");
-            if (!Directory.Exists($"{rootPath}/Build"))
+            _serializedObject.Update();
+            EditorGUI.BeginChangeCheck();
+            EditorGUILayout.PropertyField(_assetLstProperty, true);
+            if (EditorGUI.EndChangeCheck())
             {
-                Directory.CreateDirectory($"{rootPath}/Build");
+                _serializedObject.ApplyModifiedProperties();
             }
 
-            expFile.MoveTo($"{rootPath}/Build/{fileName}");
+            _packageName = EditorGUILayout.TextField("资源包名:", _packageName);
+            _suffix = EditorGUILayout.TextField("后缀:", _suffix);
+            _targetPath = EditorGUILayout.TextField("导出路径:", _targetPath);
+            if (GUILayout.Button("导出路径", GUILayout.ExpandWidth(true)))
+            {
+                _targetPath = EditorUtility.OpenFolderPanel("导出路径", _targetPath, "");
+            }
+
+            if (!GUILayout.Button("导出", GUILayout.Height(50)))
+            {
+                return;
+            }
+
+            Export();
+            Application.OpenURL(_targetPath);
+        }
+
+        private void Export()
+        {
+            var fileName = $"{_packageName}-{_suffix}.unitypackage";
+            AssetDatabase.ExportPackage(exportPaths.ToArray(), fileName, ExportPackageOptions.Recurse);
+            MoveFile(_targetPath, fileName);
+        }
+
+        private static void MoveFile(string target, string fileName)
+        {
+            var rootPath = $"{Path.Combine(Application.dataPath, "../")}";
+            var expFile = new FileInfo($"{rootPath}{fileName}");
+            if (!Directory.Exists($"{target}"))
+            {
+                Directory.CreateDirectory($"{target}");
+            }
+
+            expFile.MoveTo($"{target}/{fileName}");
         }
     }
 }

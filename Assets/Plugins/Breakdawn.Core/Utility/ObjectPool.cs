@@ -10,7 +10,7 @@ namespace Breakdawn.Core
         private readonly int _initCount;
 
         /// <summary>
-        /// 初始化对象池时触发
+        /// 初始化对象池时触发，每创建一个对象触发一次
         /// </summary>
         public event Action<T> OnInit;
 

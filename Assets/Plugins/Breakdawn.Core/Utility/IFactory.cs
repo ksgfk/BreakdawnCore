@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Breakdawn.Core
+﻿namespace Breakdawn.Core
 {
     public interface IFactory<out T>
     {
