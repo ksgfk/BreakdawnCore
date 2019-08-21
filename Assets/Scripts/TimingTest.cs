@@ -10,13 +10,20 @@ namespace Breakdawn.Test
 
         private void Start()
         {
-            taskId = TimingManager.Instance.AddTask(TimeSpan.FromSeconds(2), () => Debug.Log("hello"), -1);
-            taskId = TimingManager.Instance.AddTask(TimeSpan.FromSeconds(3), () => Debug.Log("emm"), 3);
+            var a = TimingManager.Instance.AddTask(TimeSpan.FromSeconds(2), () => Debug.Log("hello"), -1);
+            if (a.HasValue)
+            {
+                taskId = a.Value;
+            }
+            TimingManager.Instance.AddTask(TimeSpan.FromSeconds(3), () => Debug.Log("emm"), 3);
         }
 
         public void ClickDelButton()
         {
-            TimingManager.Instance.RemoveTask(taskId);
+            TimingManager.Instance.ReplaceTask(taskId, 
+                TimeSpan.FromSeconds(4), 
+                () => Debug.Log("ahh"), 
+                3);
         }
     }
 }

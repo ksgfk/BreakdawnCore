@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Breakdawn.Unity
 {
@@ -90,9 +91,14 @@ namespace Breakdawn.Unity
         /// <param name="task">任务</param>
         /// <param name="loopCount">循环执行次数，若值小于0则一直执行</param>
         /// <returns>该任务的ID</returns>
-        public Guid AddTask(TimeSpan delay, Action task, int loopCount = 1)
+        public Guid? AddTask(TimeSpan delay, Action task, int loopCount = 1)
         {
             var id = GetId();
+            if (_offset.ContainsKey(id))
+            {
+                return default;
+            }
+
             _cache.Enqueue(new TimingTask(id, task, delay, loopCount));
             return id;
         }
@@ -134,6 +140,25 @@ namespace Breakdawn.Unity
         {
             task.executeTime = DateTime.Now + task.delay;
             return ref task;
+        }
+
+        /// <summary>
+        /// 替换任务
+        /// </summary>
+        /// <param name="taskId">任务ID</param>
+        /// <param name="delay">替换后的延时执行时间</param>
+        /// <param name="task">任务</param>
+        /// <param name="loopCount">循环执行次数，若值小于0则一直执行</param>
+        /// <returns>是否替换成功</returns>
+        public bool ReplaceTask(Guid taskId, TimeSpan delay, Action task, int loopCount = 1)
+        {
+            if (!_offset.TryGetValue(taskId, out var index))
+            {
+                return false;
+            }
+
+            _tasks[index] = new TimingTask(taskId, task, delay, loopCount);
+            return true;
         }
     }
 }
