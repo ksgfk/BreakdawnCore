@@ -1,8 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using UnityEngine;
 
-namespace Breakdawn.Unity
+namespace Breakdawn.Core
 {
     internal struct TimingTask
     {
@@ -27,21 +26,14 @@ namespace Breakdawn.Unity
         }
     }
 
-    public class TimingManager : MonoSingleton<TimingManager>
+    public class Timing
     {
         private readonly List<TimingTask> _tasks = new List<TimingTask>();
         private readonly Queue<TimingTask> _cache = new Queue<TimingTask>();
         private readonly Dictionary<Guid, int> _offset = new Dictionary<Guid, int>();
+        private static readonly object Locker = new object();
 
-        private static object _locker;
-
-        private void Awake()
-        {
-            InitInstance();
-            _locker = new object();
-        }
-
-        private void Update()
+        public void OnUpdate()
         {
             while (_cache.Count > 0)
             {
@@ -77,13 +69,7 @@ namespace Breakdawn.Unity
                 }
             }
         }
-
-        private void OnDestroy()
-        {
-            DisposeInstance();
-            _locker = null;
-        }
-
+        
         /// <summary>
         /// 添加一个任务
         /// </summary>
@@ -114,7 +100,7 @@ namespace Breakdawn.Unity
 
         private static Guid GetId()
         {
-            lock (_locker)
+            lock (Locker)
             {
                 return Guid.NewGuid();
             }
