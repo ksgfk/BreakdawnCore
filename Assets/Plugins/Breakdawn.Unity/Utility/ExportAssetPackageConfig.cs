@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -6,7 +7,8 @@ using UnityEngine;
 
 namespace Breakdawn.Unity
 {
-    public class ExportAssetPackageConfig : ScriptableObject
+    [Serializable]
+    internal class ExportAssetPackageConfig : ScriptableObject
     {
         [SerializeField] public List<string> exportPaths;
         [SerializeField] public string targetPath;
@@ -22,7 +24,7 @@ namespace Breakdawn.Unity
         private string _targetPath = "";
         private string _packageName = "";
         private string _suffix = "";
-        private ExportAssetPackageConfig _assetPackageConfig;
+        private static ExportAssetPackageConfig _assetPackageConfig;
 
         [MenuItem("Breakdawn/导出Asset Package %e")]
         private static void MenuClicker()
@@ -33,7 +35,11 @@ namespace Breakdawn.Unity
 
         private void OnEnable()
         {
-            _assetPackageConfig = AssetDatabase.LoadAssetAtPath<ExportAssetPackageConfig>("Assets/Resources/ExportConfig.asset");
+            if (_assetPackageConfig == null)
+            {
+                _assetPackageConfig = Resources.Load<ExportAssetPackageConfig>("ExportConfig");
+            }
+
             if (_assetPackageConfig != null)
             {
                 exportPaths = _assetPackageConfig.exportPaths;
@@ -77,7 +83,7 @@ namespace Breakdawn.Unity
             Application.OpenURL(_targetPath);
         }
 
-        private void OnDestroy()
+        private void OnDisable()
         {
             if (_assetPackageConfig == null)
             {
@@ -89,6 +95,8 @@ namespace Breakdawn.Unity
             _assetPackageConfig.exportPaths = exportPaths;
             _assetPackageConfig.packageName = _packageName;
             _assetPackageConfig.targetPath = _targetPath;
+            AssetDatabase.SaveAssets();//为啥不会被保存...太奇怪了
+            AssetDatabase.Refresh();//TODO:换XML保存吧
         }
 
         private void Export()
