@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Breakdawn.Core
 {
@@ -16,7 +17,7 @@ namespace Breakdawn.Core
             this.id = id;
             this.task = task;
             this.delay = delay;
-            executeTime = DateTime.Now + delay;
+            executeTime = Timing.GetStandardTime() + delay;
             this.loopCount = loopCount;
         }
 
@@ -46,7 +47,7 @@ namespace Breakdawn.Core
             for (var a = 0; a < _tasks.Count; a++)
             {
                 var task = _tasks[a];
-                if (DateTime.Now < task.executeTime)
+                if (GetStandardTime() < task.executeTime)
                 {
                     continue;
                 }
@@ -69,7 +70,7 @@ namespace Breakdawn.Core
                 }
             }
         }
-        
+
         /// <summary>
         /// 添加一个任务
         /// </summary>
@@ -122,9 +123,10 @@ namespace Breakdawn.Core
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ref TimingTask RefreshTaskTime(ref TimingTask task)
         {
-            task.executeTime = DateTime.Now + task.delay;
+            task.executeTime = GetStandardTime() + task.delay;
             return ref task;
         }
 
@@ -145,6 +147,12 @@ namespace Breakdawn.Core
 
             _tasks[index] = new TimingTask(taskId, task, delay, loopCount);
             return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static DateTime GetStandardTime()
+        {
+            return DateTime.UtcNow;
         }
     }
 }
