@@ -1,0 +1,16 @@
+{
+    "name": "Breakdawn.Unity.Editor",
+    "references": [
+        "Breakdawn.Unity"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": []
+}

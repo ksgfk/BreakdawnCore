@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Breakdawn.Unity
 {
-    public class MonoSingleton<T> : MonoBehaviour where T : MonoBehaviour
+    public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoBehaviour
     {
         public static T Instance { get; private set; }
 

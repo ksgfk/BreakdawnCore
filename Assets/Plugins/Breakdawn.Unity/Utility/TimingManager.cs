@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using Breakdawn.Core;
+using UnityEngine;
 
 namespace Breakdawn.Unity
 {
+    [DisallowMultipleComponent]
+    [AddComponentMenu("Breakdawn/TimingManager")]
     public class TimingManager : MonoSingleton<TimingManager>
     {
         private readonly Timing _timing = new Timing();
