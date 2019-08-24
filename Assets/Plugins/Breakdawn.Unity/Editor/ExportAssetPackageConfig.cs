@@ -1,18 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
+using System.Xml.Serialization;
 using UnityEditor;
 using UnityEngine;
 
-namespace Breakdawn.Unity
+namespace Breakdawn.Unity.Editor
 {
     [Serializable]
-    internal class ExportAssetPackageConfig : ScriptableObject
+    public class ExportAssetPackageConfig
     {
-        [SerializeField] public List<string> exportPaths;
-        [SerializeField] public string targetPath;
-        [SerializeField] public string packageName;
-        [SerializeField] public string suffix;
+        [XmlArray("exportPaths")] public List<string> exportPaths;
+        [XmlAttribute("targetPath")] public string targetPath;
+        [XmlAttribute("packageName")] public string packageName;
+        [XmlAttribute("suffix")] public string suffix;
     }
 
     public class ExportAssetPackageWindow : EditorWindow
@@ -23,7 +25,7 @@ namespace Breakdawn.Unity
         private string _targetPath = "";
         private string _packageName = "";
         private string _suffix = "";
-        private static ExportAssetPackageConfig _assetPackageConfig;
+        private ExportAssetPackageConfig _assetPackageConfig;
 
         [MenuItem("Breakdawn/导出Asset Package %e")]
         private static void MenuClicker()
@@ -34,10 +36,13 @@ namespace Breakdawn.Unity
 
         private void OnEnable()
         {
-            if (_assetPackageConfig == null)
-            {
-                _assetPackageConfig = Resources.Load<ExportAssetPackageConfig>("ExportConfig");
-            }
+            var stream = new FileStream($"{Application.dataPath}/Resources/ExportAssetPackageConfig.xml",
+                FileMode.Open, FileAccess.Read, FileShare.Read);
+            var reader = new StreamReader(stream, Encoding.UTF8);
+            var xml = new XmlSerializer(typeof(ExportAssetPackageConfig));
+            _assetPackageConfig = xml.Deserialize(reader) as ExportAssetPackageConfig;
+            stream.Close();
+            reader.Close();
 
             if (_assetPackageConfig != null)
             {
@@ -86,16 +91,21 @@ namespace Breakdawn.Unity
         {
             if (_assetPackageConfig == null)
             {
-                _assetPackageConfig = CreateInstance<ExportAssetPackageConfig>();
-                AssetDatabase.CreateAsset(_assetPackageConfig, "Assets/Resources/ExportConfig.asset");
+                _assetPackageConfig = new ExportAssetPackageConfig();
             }
 
             _assetPackageConfig.suffix = _suffix;
             _assetPackageConfig.exportPaths = exportPaths;
             _assetPackageConfig.packageName = _packageName;
             _assetPackageConfig.targetPath = _targetPath;
-            AssetDatabase.SaveAssets();//为啥不会被保存...太奇怪了
-            AssetDatabase.Refresh();//TODO:换XML保存吧
+
+            var stream = new FileStream($"{Application.dataPath}/Resources/ExportAssetPackageConfig.xml",
+                FileMode.Create, FileAccess.Write, FileShare.Write);
+            var writer = new StreamWriter(stream, Encoding.UTF8);
+            var xml = new XmlSerializer(typeof(ExportAssetPackageConfig));
+            xml.Serialize(writer, _assetPackageConfig);
+            writer.Close();
+            stream.Close();
         }
 
         private void Export()
