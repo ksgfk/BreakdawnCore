@@ -5,7 +5,7 @@ namespace Breakdawn.Unity
 {
     public class TimingManager : MonoSingleton<TimingManager>
     {
-        private readonly Timing _timing = new Timing();
+        private readonly Timing _timing = new Timing(-1);
 
         private void Awake()
         {
@@ -29,7 +29,7 @@ namespace Breakdawn.Unity
         /// <param name="task">任务</param>
         /// <param name="loopCount">循环执行次数，若值小于0则一直执行</param>
         /// <returns>该任务的ID</returns>
-        public Guid? AddTask(TimeSpan delay, Action task, int loopCount = 1)
+        public Guid? AddTask(TimeSpan delay, Action<Guid> task, int loopCount = 1)
         {
             return _timing.AddTask(delay, task, loopCount);
         }
@@ -60,7 +60,7 @@ namespace Breakdawn.Unity
         /// <param name="task">任务</param>
         /// <param name="loopCount">循环执行次数，若值小于0则一直执行</param>
         /// <returns>是否替换成功</returns>
-        public bool ReplaceTask(Guid taskId, TimeSpan delay, Action task, int loopCount = 1)
+        public bool ReplaceTask(Guid taskId, TimeSpan delay, Action<Guid> task, int loopCount = 1)
         {
             return _timing.ReplaceTask(taskId, delay, task, loopCount);
         }
