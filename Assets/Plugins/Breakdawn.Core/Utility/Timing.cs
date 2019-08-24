@@ -42,7 +42,8 @@ namespace Breakdawn.Core
         /// </summary>
         public event Action<Action<Guid>, Guid> TaskHandler;
 
-        private static readonly object Locker = new object();
+        private static readonly object Locker2 = new object();
+        private static readonly object Locker1 = new object();
 
         /// <summary>
         /// 
@@ -96,7 +97,7 @@ namespace Breakdawn.Core
             return this;
         }
 
-        public void OnUpdate()
+        private void OnUpdate()
         {
             while (_cache.Count > 0)
             {
@@ -167,7 +168,7 @@ namespace Breakdawn.Core
 
         private static Guid GetId()
         {
-            lock (Locker)
+            lock (Locker2)
             {
                 return Guid.NewGuid();
             }
@@ -212,13 +213,16 @@ namespace Breakdawn.Core
         /// <returns>是否替换成功</returns>
         public bool ReplaceTask(Guid taskId, TimeSpan delay, Action<Guid> task, int loopCount = 1)
         {
-            if (!_offset.TryGetValue(taskId, out var index))
+            lock (Locker1)
             {
-                return false;
-            }
+                if (!_offset.TryGetValue(taskId, out var index))
+                {
+                    return false;
+                }
 
-            _tasks[index] = new TimingTask(taskId, task, delay, loopCount);
-            return true;
+                _tasks[index] = new TimingTask(taskId, task, delay, loopCount);
+                return true;
+            }
         }
 
         /// <summary>

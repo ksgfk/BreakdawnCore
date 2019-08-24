@@ -1,25 +1,41 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using Breakdawn.Core;
 
 namespace Breakdawn.Unity
 {
     public class TimingManager : MonoSingleton<TimingManager>
     {
-        private readonly Timing _timing = new Timing(-1);
+        private readonly Timing _timing = new Timing();
+        private readonly ConcurrentQueue<(Action<Guid>, Guid)> _queue = new ConcurrentQueue<(Action<Guid>, Guid)>();
 
         private void Awake()
         {
             InitInstance();
+            _timing.TaskHandler += (act, id) => _queue.Enqueue((act, id));
+            _timing.Start();
         }
 
         private void Update()
         {
-            _timing.OnUpdate();
+            var a = 0;
+            while (_queue.Count != a)
+            {
+                var r = _queue.TryDequeue(out var t);
+                if (!r)
+                {
+                    a++;
+                    continue;
+                }
+
+                t.Item1(t.Item2);
+            }
         }
 
         private void OnDestroy()
         {
             DisposeInstance();
+            _timing.Close();
         }
 
         /// <summary>
