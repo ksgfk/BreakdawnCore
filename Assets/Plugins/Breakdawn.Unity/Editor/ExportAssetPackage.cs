@@ -17,7 +17,7 @@ namespace Breakdawn.Unity.Editor
         [XmlAttribute("suffix")] public string suffix;
     }
 
-    public class ExportAssetPackageWindow : EditorWindow
+    public class ExportAssetPackage : EditorWindow
     {
         [SerializeField] private List<string> exportPaths;
         private SerializedObject _serializedObject;
@@ -31,7 +31,7 @@ namespace Breakdawn.Unity.Editor
         private static void MenuClicker()
         {
             var rect = new Rect(50, 50, 400, 400);
-            GetWindowWithRect<ExportAssetPackageWindow>(rect, false, "导出资源包");
+            GetWindowWithRect<ExportAssetPackage>(rect, false, "导出资源包");
         }
 
         private void OnEnable()
