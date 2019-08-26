@@ -12,10 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9310d393b1207c439c0feabc8f56a67, type: 3}
   m_Name: ExportABConfig
   m_EditorClassIdentifier: 
+  exportPath: Assets/StreamingAssets
   allPrefabPaths:
   - Assets/Prefabs
-  allABFileDirName:
-  - Name: shaders
-    Path: Assets/Shaders
-  - Name: sounds
-    Path: Assets/Sounds
+  allABFileDir:
+  - name: shaders
+    path: Assets/Shaders
+  - name: sounds
+    path: Assets/Sounds
+  - name: models
+    path: Assets/Models
