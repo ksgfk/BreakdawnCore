@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Xml.Serialization;
 using Breakdawn.Core;
@@ -29,6 +30,11 @@ namespace Breakdawn.Unity.Editor
         /// </summary>
         private readonly Dictionary<string, List<string>> _allPrefabsDir = new Dictionary<string, List<string>>();
 
+        /// <summary>
+        /// 有效路径
+        /// </summary>
+        private readonly List<string> _validPaths = new List<string>();
+
         [MenuItem("Breakdawn/构建Asset Bundle")]
         public static void Build()
         {
@@ -42,6 +48,7 @@ namespace Breakdawn.Unity.Editor
                 var prefabGuid = allPrefabsGuid[i];
                 var path = AssetDatabase.GUIDToAssetPath(prefabGuid); //获取Prefab的GUID
                 EditorUtility.DisplayProgressBar("查找Prefabs", $"Prefab:{path}", i * 1F / allPrefabsGuid.Length);
+                eab._validPaths.Add(path);
                 if (eab.ContainAllFileAB(path))
                 {
                     continue;
@@ -79,7 +86,7 @@ namespace Breakdawn.Unity.Editor
 
             try
             {
-                BuildAssetBundles();
+                eab.BuildAssetBundles();
             }
             finally
             {
@@ -98,6 +105,7 @@ namespace Breakdawn.Unity.Editor
             {
                 _allFileDir.Add(config.name, config.path);
                 _allFileAB.Add(config.path);
+                _validPaths.Add(config.path);
             }
         }
 
@@ -130,7 +138,7 @@ namespace Breakdawn.Unity.Editor
             }
         }
 
-        private static void BuildAssetBundles()
+        private void BuildAssetBundles()
         {
             var allABs = AssetDatabase.GetAllAssetBundleNames();
             var resPaths = new Dictionary<string, string>(); //key:路径，value:包名
@@ -144,7 +152,11 @@ namespace Breakdawn.Unity.Editor
                         continue;
                     }
 
-                    resPaths.Add(path, ab);
+                    Debug.Log($"包 {ab} 下包含资源 {path}");
+                    if (IsValidPath(path))
+                    {
+                        resPaths.Add(path, ab);
+                    }
                 }
             }
 
@@ -232,13 +244,25 @@ namespace Breakdawn.Unity.Editor
                 config.abList.Add(abBase);
             }
 
-            var xmlPath = $"{Application.dataPath}/StreamingAssets/AssetBundleConfig.xml";
+            var xmlPath = $"{Application.dataPath}/../Logs/AssetBundleConfig.xml";
             var fileStream = new FileStream(xmlPath, FileMode.Create, FileAccess.Write, FileShare.Write);
             var writer = new StreamWriter(fileStream, Encoding.UTF8);
             var serializer = new XmlSerializer(typeof(AssetBundleConfig));
             serializer.Serialize(writer, config);
             writer.Close();
             fileStream.Close();
+
+            config.abList.ForEach(ab => ab.path = string.Empty);
+            var bytePath = $"{_exportPath}/AssetBundleConfig.config";
+            var fs = new FileStream(bytePath, FileMode.Create, FileAccess.Write, FileShare.Write);
+            var binary = new BinaryFormatter();
+            binary.Serialize(fs, config);
+            fs.Close();
+        }
+
+        private bool IsValidPath(string path)
+        {
+            return _validPaths.Any(path.Contains);
         }
     }
 }
