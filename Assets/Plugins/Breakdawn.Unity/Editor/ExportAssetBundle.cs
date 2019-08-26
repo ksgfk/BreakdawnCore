@@ -115,7 +115,8 @@ namespace Breakdawn.Unity.Editor
         /// <param name="path">文件路径</param>
         private bool ContainAllFileAB(string path)
         {
-            return _allFileAB.Any(fileAB => fileAB == path || path.Contains(fileAB));
+            return _allFileAB.Any(fileAB =>
+                fileAB == path || (path.Contains(fileAB) && path.Replace(fileAB, string.Empty)[0] == '/'));
         }
 
         private static void SetABName(string name, string path)
