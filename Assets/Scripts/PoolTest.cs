@@ -19,7 +19,6 @@ namespace Breakdawn.Test
             _pool.OnGetObject += go => go.Show();
             _pool.OnRecycling += go => go.Hide();
             _pool.OnRelease += Destroy;
-            _pool.Init();
         }
 
         private float _last;

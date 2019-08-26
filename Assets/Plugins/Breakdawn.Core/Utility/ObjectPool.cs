@@ -35,7 +35,6 @@ namespace Breakdawn.Core
         public event Action<T> OnRelease;
 
         public int InstanceCount { get; private set; }
-        public bool IsInit { get; private set; }
 
         public ObjectPool(IFactory<T> factory, int initCount = 0)
         {
@@ -43,10 +42,10 @@ namespace Breakdawn.Core
             _initCount = initCount >= 0 ? initCount : throw new ArgumentException($"{nameof(initCount)}不能小于0");
             _pool = new Stack<T>(initCount);
             InstanceCount = 0;
-            IsInit = false;
+            Init();
         }
 
-        public void Init()
+        private void Init()
         {
             for (var i = 0; i < _initCount; i++)
             {
@@ -54,8 +53,6 @@ namespace Breakdawn.Core
                 OnInit?.Invoke(instance);
                 _pool.Push(instance);
             }
-
-            IsInit = true;
         }
 
         public T Get()
@@ -68,26 +65,30 @@ namespace Breakdawn.Core
         private T GetObjectFromFactory()
         {
             var get = _factory.Get();
-//            OnInit?.Invoke(get);
             InstanceCount++;
             return get;
         }
 
-        public void Recycle(T @object)
+        public bool Recycle(T @object)
         {
             var checkResult = OnPreRecycle?.Invoke(@object);
             if (!checkResult.HasValue)
             {
-                ResetAndPush(@object);
-                return;
+                return false;
             }
 
             if (!checkResult.Value)
             {
-                return;
+                return false;
+            }
+
+            if (_pool.Count + 1 > InstanceCount)
+            {
+                return false;
             }
 
             ResetAndPush(@object);
+            return true;
         }
 
         private void ResetAndPush(T @object)
