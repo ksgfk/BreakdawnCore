@@ -6,7 +6,7 @@ namespace Breakdawn.Core
 {
     public abstract class Singleton<T> where T : class
     {
-        private static readonly Lazy<T> InstanceConstructor = new Lazy<T>(() =>
+        private static Lazy<T> _instanceConstructor = new Lazy<T>(() =>
         {
             var type = typeof(T);
             if (type.IsAbstract)
@@ -30,6 +30,11 @@ namespace Breakdawn.Core
             return Activator.CreateInstance(type, true) as T;
         }, true);
 
-        public static T Instance => InstanceConstructor.Value;
+        public static T Instance => _instanceConstructor.Value;
+
+        public static void Release()
+        {
+            _instanceConstructor = null;
+        }
     }
 }

@@ -204,7 +204,8 @@ namespace Breakdawn.Unity.Editor
         {
             var config = new AssetBundleConfig
             {
-                abList = new List<AssetBundleBase>()
+                abList = new List<AssetBundleBase>()//,
+                //path = _exportPath
             };
             foreach (var path in resPath.Keys)
             {

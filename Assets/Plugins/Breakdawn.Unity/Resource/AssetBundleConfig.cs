@@ -8,8 +8,12 @@ namespace Breakdawn.Unity
     public class AssetBundleConfig
     {
         [XmlElement("abList")] public List<AssetBundleBase> abList;
+        [XmlElement("path")] public string path;
     }
 
+    /// <summary>
+    /// AB包基础信息
+    /// </summary>
     [Serializable]
     public class AssetBundleBase
     {

@@ -10,6 +10,10 @@ namespace Breakdawn.Unity
     {
         private readonly Dictionary<Type, object> _poolDict = new Dictionary<Type, object>();
 
+        private ObjectManager()
+        {
+        }
+
         [CanBeNull]
         public ObjectPool<T> GetPool<T>() where T : class
         {
@@ -54,7 +58,7 @@ namespace Breakdawn.Unity
             return result.HasValue && result.Value;
         }
 
-        public void Release()
+        public void ReleasePools()
         {
             foreach (var pool in _poolDict.Values)
             {
