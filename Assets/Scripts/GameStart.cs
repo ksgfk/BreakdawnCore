@@ -5,6 +5,7 @@ namespace Breakdawn.Test
 {
     public class GameStart : MonoBehaviour
     {
+        private GameObject _attackPrefab;
         private GameObject _attack;
 
         private void Awake()
@@ -14,10 +15,19 @@ namespace Breakdawn.Test
 
         private void Start()
         {
-            _attack = AssetBundleManager.Instance.GetAssetDependAB("Attack.prefab").LoadAsset<GameObject>("Attack");
-            _attack = AssetBundleManager.Instance.GetAssetDependAB("Attack.prefab").LoadAsset<GameObject>("Attack");
+            _attackPrefab = AssetBundleManager.Instance.GetAssetDependAB("Attack.prefab")
+                .LoadAsset<GameObject>("Attack");
+            _attackPrefab = AssetBundleManager.Instance.GetAssetDependAB("Attack.prefab")
+                .LoadAsset<GameObject>("Attack");
             var a = AssetBundleManager.Instance;
-            Instantiate(_attack);
+            _attack = Instantiate(_attackPrefab);
+        }
+
+        public void OnButtonClick()
+        {
+            Destroy(_attack);
+            AssetBundleManager.Instance.ReleaseAsset("Attack.prefab");
+            var a = AssetBundleManager.Instance;
         }
     }
 }

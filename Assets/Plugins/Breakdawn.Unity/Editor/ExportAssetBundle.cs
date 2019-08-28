@@ -11,6 +11,11 @@ using UnityEngine;
 
 namespace Breakdawn.Unity.Editor
 {
+    /// <summary>
+    /// 读取Assets/Resources下的ExportABConfig.asset文件来导出AB包
+    /// 生成两份配置表，XML版在 工程根目录/Logs/AssetConfig.xml，二进制版在Assets/StreamingAssets/AssetConfig.config
+    /// 二进制配置表不包含资源路径
+    /// </summary>
     public class ExportAssetBundle
     {
         private static string _exportPath;

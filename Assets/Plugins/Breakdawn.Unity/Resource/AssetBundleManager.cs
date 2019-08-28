@@ -8,7 +8,7 @@ namespace Breakdawn.Unity
 {
     public class AssetBundleRef
     {
-        public AssetBundle assetBundle;
+        public readonly AssetBundle assetBundle;
         internal int refCount;
 
         public AssetBundleRef(AssetBundle assetBundle)
@@ -39,7 +39,6 @@ namespace Breakdawn.Unity
 
         private AssetBundleManager()
         {
-            //_abRefPool.OnRecycling += abRef => abRef.Reset();
         }
 
         public bool LoadConfig(string path)
@@ -183,6 +182,26 @@ namespace Breakdawn.Unity
             }
 
             UnloadAssetBundle(assetInfo.abName);
+        }
+
+        public void ReleaseAsset(string name)
+        {
+            if (!_nameDict.TryGetValue(name, out var info))
+            {
+                return;
+            }
+
+            ReleaseAsset(info);
+        }
+
+        public void ReleaseAsset(uint crc)
+        {
+            if (!_crcDict.TryGetValue(crc, out var info))
+            {
+                return;
+            }
+
+            ReleaseAsset(info);
         }
 
         private void UnloadAssetBundle(string name)
