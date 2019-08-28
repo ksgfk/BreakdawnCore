@@ -4,7 +4,7 @@
 该储存库用于存放学习C#，Unity过程中积累的代码。
 
 ## Install/安装
-目前还没有Release资源包，你可以Clone该储存库，并将Assets/Plugins文件夹下的[Breakdawn.Core]和[Breakdawn.Unity]拖入自己的Unity工程
+从[Releases](https://github.com/ksgfk/BreakdawnCore/releases)中下载最新版，拖入Unity工程即可
 
 ## Usage/使用
 [Breakdawn.Core]不依赖Unity，可以单独在一个C#工程中存在。
