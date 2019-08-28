@@ -5,23 +5,23 @@ using System.Xml.Serialization;
 namespace Breakdawn.Unity
 {
     [Serializable]
-    public class AssetBundleConfig
+    public class AssetConfig
     {
-        [XmlElement("abList")] public List<AssetBundleBase> abList;
+        [XmlElement("assetList")] public List<AssetInfo> assetList;
         [XmlElement("path")] public string path;
     }
 
     /// <summary>
-    /// AB包基础信息
+    /// 资源信息
     /// </summary>
     [Serializable]
-    public class AssetBundleBase
+    public class AssetInfo
     {
         [XmlElement("path")] public string path;
         [XmlElement("crc")] public uint crc;
         [XmlElement("hash")] public string hash;
-        [XmlElement("name")] public string name;
+        [XmlElement("abName")] public string abName;
         [XmlAttribute("assetName")] public string assetName;
-        [XmlElement("dependence")] public List<string> dependence;
+        [XmlElement("dependABs")] public List<string> dependABs;
     }
 }

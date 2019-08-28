@@ -1,40 +1,20 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using Breakdawn.Core;
-using JetBrains.Annotations;
 using UnityEngine;
 
 namespace Breakdawn.Unity
 {
-    /// <summary>
-    /// 包含AB包实例的AB包信息
-    /// </summary>
-    [Serializable]
-    public class AssetBundleInstance
-    {
-        public AssetBundle assetBundle;
-        public AssetBundleBase baseInfo;
-
-        public AssetBundleInstance(AssetBundleBase @baseInfo)
-        {
-            this.baseInfo = baseInfo;
-        }
-    }
-
-    /// <summary>
-    /// AB包实例的引用信息
-    /// </summary>
-    [Serializable]
     public class AssetBundleRef
     {
         public AssetBundle assetBundle;
-        public int refCount;
+        internal int refCount;
 
         public AssetBundleRef(AssetBundle assetBundle)
         {
             this.assetBundle = assetBundle;
+            refCount = 0;
         }
 
         public void Reset()
@@ -46,29 +26,33 @@ namespace Breakdawn.Unity
 
     public class AssetBundleManager : Singleton<AssetBundleManager>
     {
-        public string configName = "/AssetBundleConfig.config";
+        public string configName = "/AssetConfig.config";
 
         /// <summary>
-        /// 资源配置表，根据CRC查找
+        /// 资源配置表，key:导出时资源路径CRC32，value:资源信息
         /// </summary>
-        private readonly Dictionary<uint, AssetBundleInstance> _resourceDict =
-            new Dictionary<uint, AssetBundleInstance>();
+        private readonly Dictionary<uint, AssetInfo> _crcDict = new Dictionary<uint, AssetInfo>();
 
-        private readonly Dictionary<uint, AssetBundleRef> _abRefs = new Dictionary<uint, AssetBundleRef>();
+        /// <summary>
+        /// 资源配置表，key:资源名，value:资源信息
+        /// </summary>
+        private readonly Dictionary<string, AssetInfo> _nameDict = new Dictionary<string, AssetInfo>();
 
-        private readonly ObjectPool<AssetBundleRef> _abRefPool =
-            ObjectManager.Instance.AddPool(new ObjectFactory<AssetBundleRef>(() => new AssetBundleRef(null)));
+        /// <summary>
+        /// 已加载的AB包，key:AB包名，value:实例
+        /// </summary>
+        private readonly Dictionary<string, AssetBundleRef> _abDict = new Dictionary<string, AssetBundleRef>();
 
         private AssetBundleManager()
         {
-            _abRefPool.OnRecycling += abRef => abRef.Reset();
+            //_abRefPool.OnRecycling += abRef => abRef.Reset();
         }
 
         public bool LoadConfig(string path)
         {
             var fileStream = new FileStream(path + configName, FileMode.Open, FileAccess.Read, FileShare.Read);
             var binary = new BinaryFormatter();
-            var config = binary.Deserialize(fileStream) as AssetBundleConfig;
+            var config = binary.Deserialize(fileStream) as AssetConfig;
             fileStream.Close();
 
             if (config == null)
@@ -77,93 +61,112 @@ namespace Breakdawn.Unity
                 return false;
             }
 
-            foreach (var list in config.abList)
+            foreach (var list in config.assetList)
             {
-                if (_resourceDict.ContainsKey(list.crc))
+                if (_crcDict.ContainsKey(list.crc))
                 {
-                    Debug.LogWarning($"重复CRC!:ab[{list.name}],assetName[{list.assetName}],crc[{list.crc}]");
+                    Debug.LogWarning($"重复CRC!:ab[{list.abName}],assetName[{list.assetName}],crc[{list.crc}]");
                 }
                 else
                 {
-                    _resourceDict.Add(list.crc, new AssetBundleInstance(list));
+                    _crcDict.Add(list.crc, list);
+                }
+
+                if (_nameDict.ContainsKey(list.assetName))
+                {
+                    Debug.LogWarning($"重复资源!:ab[{list.abName}],assetName[{list.assetName}],crc[{list.crc}]");
+                }
+                else
+                {
+                    _nameDict.Add(list.assetName, list);
                 }
             }
 
             return true;
         }
 
-        [CanBeNull]
-        public AssetBundleInstance GetAssetBundleInstance(uint crc)
+        private AssetBundleRef GetAssetBundle(string name, bool isRefAsset = false)
         {
-            if (!_resourceDict.TryGetValue(crc, out var abInst) || abInst == null)
+            AssetBundleRef result;
+            if (_abDict.TryGetValue(name, out var abRef))
             {
-                Debug.LogError($"无法获取AB包信息，crc:{crc}");
-                return null;
+                result = abRef;
+            }
+            else
+            {
+                var fullABPath = $"{Application.streamingAssetsPath}/{name}";
+                var ab = LoadAssetBundle(fullABPath);
+                if (ab == null)
+                {
+                    Debug.LogError($"无法加载AB包:{name}");
+                    return null;
+                }
+
+                result = new AssetBundleRef(ab);
+                _abDict.Add(name, result);
             }
 
-            if (abInst.assetBundle != null)
+            if (isRefAsset)
             {
-                return abInst;
+                result.refCount++;
             }
 
-            abInst.assetBundle = LoadAssetBundle(abInst.baseInfo);
-            return abInst;
+            return result;
         }
 
-        [CanBeNull]
-        private AssetBundle LoadAssetBundle(AssetBundleBase baseInfo)
+        private AssetBundleRef GetAssetBundle(AssetInfo assetInfo, bool isRefAsset = false)
         {
-            if (!_resourceDict.TryGetValue(baseInfo.crc, out var abInst)) //获取AB信息
+            var abRef = GetAssetBundle(assetInfo.abName, isRefAsset);
+            ProcessDepend(assetInfo.dependABs);
+            return abRef;
+        }
+
+        /// <summary>
+        /// 获取资源所在的AssetBundle
+        /// </summary>
+        /// <param name="crc">该资源的CRC32值</param>
+        /// <returns>AB引用</returns>
+        public AssetBundleRef GetAssetDependAB(uint crc)
+        {
+            if (_crcDict.TryGetValue(crc, out var info))
             {
-                Debug.LogError($"无法找到AB包信息，crc:{baseInfo.crc}");
-                return null; //不存在AB信息的话就没办法了
+                return GetAssetBundle(info);
             }
 
-            var abPath = $"{Application.streamingAssetsPath}/{baseInfo.name}";
-            var nowPathCrc = CRC32.Get(abPath);
-            if (!_abRefs.TryGetValue(nowPathCrc, out var abRef)) //获取AB包引用信息
+            Debug.LogError($"不存在资源:CRC[{crc}]");
+            return null;
+        }
+
+        /// <summary>
+        /// 获取资源所在的AssetBundle
+        /// </summary>
+        /// <param name="name">该资源的完整名称，带后缀</param>
+        /// <returns>AB引用</returns>
+        public AssetBundleRef GetAssetDependAB(string name)
+        {
+            if (_nameDict.TryGetValue(name, out var info))
             {
-                abRef = _abRefPool.Get(); //不存在的话从池中取一个
-                abRef.assetBundle = abInst.assetBundle;
-                _abRefs.Add(nowPathCrc, abRef);
+                return GetAssetBundle(info);
             }
 
-            var result = abRef.assetBundle;
-            if (result == null) //AB包引用信息的AB引用是null，就尝试加载
+            Debug.LogError($"不存在资源:name[{name}]");
+            return null;
+        }
+
+        private void ProcessDepend(IEnumerable<string> depends)
+        {
+            foreach (var depend in depends)
             {
-                var ab = AssetBundle.LoadFromFile(abPath);
-                if (ab == null)
+                if (!_abDict.TryGetValue(depend, out _))
                 {
-                    Debug.LogError($"无法加载AB包，crc:{baseInfo.crc}");
+                    GetAssetBundle(depend);
                 }
-
-                abRef.assetBundle = ab;
-                abInst.assetBundle = ab;
             }
+        }
 
-            abRef.refCount++;
-
-            foreach (var depend in baseInfo.dependence) //处理依赖
-            {
-                var dependABPath = $"{Application.streamingAssetsPath}/{depend}";
-                var dependCrc = CRC32.Get(dependABPath);
-                if (!_abRefs.TryGetValue(dependCrc, out var dependRef))
-                {
-                    dependRef = _abRefPool.Get();
-                    _abRefs.Add(dependCrc, dependRef);
-                }
-
-                var ab = AssetBundle.LoadFromFile(dependABPath);
-                if (ab == null)
-                {
-                    Debug.LogError($"无法加载AB包，crc:{baseInfo.crc}");
-                }
-
-                dependRef.assetBundle = ab;
-                dependRef.refCount++;
-            }
-
-            return abRef.assetBundle;
+        private static AssetBundle LoadAssetBundle(string path)
+        {
+            return AssetBundle.LoadFromFile(path);
         }
     }
 }

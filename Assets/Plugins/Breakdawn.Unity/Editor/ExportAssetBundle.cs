@@ -202,9 +202,9 @@ namespace Breakdawn.Unity.Editor
 
         private static void WriteABsInfo(Dictionary<string, string> resPath, AssetBundleManifest manifest)
         {
-            var config = new AssetBundleConfig
+            var config = new AssetConfig
             {
-                abList = new List<AssetBundleBase>()//,
+                assetList = new List<AssetInfo>() //,
                 //path = _exportPath
             };
             foreach (var path in resPath.Keys)
@@ -234,28 +234,28 @@ namespace Breakdawn.Unity.Editor
                     }
                 }
 
-                var abBase = new AssetBundleBase
+                var abBase = new AssetInfo
                 {
                     path = path,
                     crc = CRC32.Get(path),
-                    name = resPath[path],
+                    abName = resPath[path],
                     assetName = path.Remove(0, path.LastIndexOf("/", StringComparison.Ordinal) + 1),
-                    dependence = dependList,
+                    dependABs = dependList,
                     hash = manifest.GetAssetBundleHash(resPath[path]).ToString()
                 };
-                config.abList.Add(abBase);
+                config.assetList.Add(abBase);
             }
 
-            var xmlPath = $"{Application.dataPath}/../Logs/AssetBundleConfig.xml";
+            var xmlPath = $"{Application.dataPath}/../Logs/AssetConfig.xml";
             var fileStream = new FileStream(xmlPath, FileMode.Create, FileAccess.Write, FileShare.Write);
             var writer = new StreamWriter(fileStream, Encoding.UTF8);
-            var serializer = new XmlSerializer(typeof(AssetBundleConfig));
+            var serializer = new XmlSerializer(typeof(AssetConfig));
             serializer.Serialize(writer, config);
             writer.Close();
             fileStream.Close();
 
-            config.abList.ForEach(ab => ab.path = string.Empty);
-            var bytePath = $"{_exportPath}/AssetBundleConfig.config";
+            config.assetList.ForEach(ab => ab.path = string.Empty);
+            var bytePath = $"{_exportPath}/AssetConfig.config";
             var fs = new FileStream(bytePath, FileMode.Create, FileAccess.Write, FileShare.Write);
             var binary = new BinaryFormatter();
             binary.Serialize(fs, config);
