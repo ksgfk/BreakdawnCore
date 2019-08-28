@@ -16,12 +16,6 @@ namespace Breakdawn.Unity
             this.assetBundle = assetBundle;
             refCount = 0;
         }
-
-        public void Reset()
-        {
-            assetBundle = null;
-            refCount = 0;
-        }
     }
 
     public class AssetBundleManager : Singleton<AssetBundleManager>
@@ -85,7 +79,13 @@ namespace Breakdawn.Unity
             return true;
         }
 
-        private AssetBundleRef GetAssetBundle(string name, bool isRefAsset = false)
+        /// <summary>
+        /// 获取AB包
+        /// </summary>
+        /// <param name="name">包名</param>
+        /// <param name="isRefAsset">是否有资源引用该包</param>
+        /// <returns></returns>
+        public AssetBundle GetAssetBundle(string name, bool isRefAsset = false)
         {
             AssetBundleRef result;
             if (_abDict.TryGetValue(name, out var abRef))
@@ -111,10 +111,10 @@ namespace Breakdawn.Unity
                 result.refCount++;
             }
 
-            return result;
+            return result.assetBundle;
         }
 
-        private AssetBundleRef GetAssetBundle(AssetInfo assetInfo, bool isRefAsset = false)
+        public AssetBundle GetAssetBundle(AssetInfo assetInfo, bool isRefAsset = false)
         {
             var abRef = GetAssetBundle(assetInfo.abName, isRefAsset);
             ProcessDepend(assetInfo.dependABs);
@@ -126,7 +126,7 @@ namespace Breakdawn.Unity
         /// </summary>
         /// <param name="crc">该资源的CRC32值</param>
         /// <returns>AB引用</returns>
-        public AssetBundleRef GetAssetDependAB(uint crc)
+        public AssetBundle GetAssetDependAB(uint crc)
         {
             if (_crcDict.TryGetValue(crc, out var info))
             {
@@ -142,7 +142,7 @@ namespace Breakdawn.Unity
         /// </summary>
         /// <param name="name">该资源的完整名称，带后缀</param>
         /// <returns>AB引用</returns>
-        public AssetBundleRef GetAssetDependAB(string name)
+        public AssetBundle GetAssetDependAB(string name)
         {
             if (_nameDict.TryGetValue(name, out var info))
             {
@@ -159,9 +159,47 @@ namespace Breakdawn.Unity
             {
                 if (!_abDict.TryGetValue(depend, out _))
                 {
-                    GetAssetBundle(depend);
+                    GetAssetBundle(depend, true);
                 }
             }
+        }
+
+        public void ReleaseAsset(AssetInfo assetInfo)
+        {
+            if (!_abDict.TryGetValue(assetInfo.abName, out var abRef))
+            {
+                Debug.LogError($"AB包未加载，name:{assetInfo.abName}");
+                return;
+            }
+
+            if (abRef.assetBundle == null)
+            {
+                return;
+            }
+
+            foreach (var depend in assetInfo.dependABs)
+            {
+                UnloadAssetBundle(depend);
+            }
+
+            UnloadAssetBundle(assetInfo.abName);
+        }
+
+        private void UnloadAssetBundle(string name)
+        {
+            if (!_abDict.TryGetValue(name, out var abRef))
+            {
+                return;
+            }
+
+            abRef.refCount--;
+            if (abRef.assetBundle == null || abRef.refCount > 0)
+            {
+                return;
+            }
+
+            abRef.assetBundle.Unload(true);
+            _abDict.Remove(name);
         }
 
         private static AssetBundle LoadAssetBundle(string path)
