@@ -1,4 +1,6 @@
-﻿using Breakdawn.Unity;
+﻿using System.Collections.Generic;
+using Breakdawn.Core;
+using Breakdawn.Unity;
 using UnityEngine;
 
 namespace Breakdawn.Test
@@ -21,6 +23,15 @@ namespace Breakdawn.Test
                 .LoadAsset<GameObject>("Attack");
             var a = AssetBundleManager.Instance;
             _attack = Instantiate(_attackPrefab);
+
+            var raw = new LinkedList<int>();
+            raw.AddLast(1);
+            raw.AddLast(2);
+            raw.AddLast(3);
+            var l = new FastLinkedList<int>(ref raw);
+            var node = l.Find(2);
+            var b = l.Contains(default);
+            Debug.Log(b);
         }
 
         public void OnButtonClick()

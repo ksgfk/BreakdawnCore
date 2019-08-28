@@ -14,20 +14,26 @@ namespace Breakdawn.Core
         public LinkedListNode<T> First => _list.First;
         public LinkedListNode<T> Last => _list.Last;
 
-        public FastLinkedList() : this(new LinkedList<T>())
+        public FastLinkedList()
         {
+            _list = new LinkedList<T>();
+            _nodeDict = new Dictionary<T, LinkedListNode<T>>();
         }
 
-        public FastLinkedList(LinkedList<T> list)
+        /// <param name="list">传入链表，注意，调用该构造函数时会将该字段置空</param>
+        public FastLinkedList(ref LinkedList<T> list)
         {
             _list = list;
             _nodeDict = new Dictionary<T, LinkedListNode<T>>(_list.Count);
             var node = _list.First;
-            while (node.Next != null)
+            while (node != null)
             {
+                ParameterCheck(node);
                 _nodeDict.Add(node.Value, node);
                 node = node.Next;
             }
+
+            list = null;
         }
 
         public IEnumerator<T> GetEnumerator()
