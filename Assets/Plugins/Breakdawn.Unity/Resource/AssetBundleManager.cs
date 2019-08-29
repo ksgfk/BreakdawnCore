@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using Breakdawn.Core;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace Breakdawn.Unity
@@ -84,6 +85,7 @@ namespace Breakdawn.Unity
         /// <param name="name">包名</param>
         /// <param name="isRefAsset">是否有资源引用该包</param>
         /// <returns></returns>
+        [CanBeNull]
         public AssetBundle GetAssetBundle(string name, bool isRefAsset = false)
         {
             AssetBundleRef result;
@@ -113,6 +115,7 @@ namespace Breakdawn.Unity
             return result.assetBundle;
         }
 
+        [CanBeNull]
         public AssetBundle GetAssetBundle(AssetInfo assetInfo, bool isRefAsset = false)
         {
             var abRef = GetAssetBundle(assetInfo.abName, isRefAsset);
@@ -125,15 +128,10 @@ namespace Breakdawn.Unity
         /// </summary>
         /// <param name="crc">该资源的CRC32值</param>
         /// <returns>AB引用</returns>
+        [CanBeNull]
         public AssetBundle GetAssetDependAB(uint crc)
         {
-            if (_crcDict.TryGetValue(crc, out var info))
-            {
-                return GetAssetBundle(info);
-            }
-
-            Debug.LogError($"不存在资源:CRC[{crc}]");
-            return null;
+            return GetAssetBundle(GetAssetInfo(crc));
         }
 
         /// <summary>
@@ -141,14 +139,33 @@ namespace Breakdawn.Unity
         /// </summary>
         /// <param name="name">该资源的完整名称，带后缀</param>
         /// <returns>AB引用</returns>
+        [CanBeNull]
         public AssetBundle GetAssetDependAB(string name)
+        {
+            return GetAssetBundle(GetAssetInfo(name));
+        }
+
+        [CanBeNull]
+        internal AssetInfo GetAssetInfo(string name)
         {
             if (_nameDict.TryGetValue(name, out var info))
             {
-                return GetAssetBundle(info);
+                return info;
             }
 
             Debug.LogError($"不存在资源:name[{name}]");
+            return null;
+        }
+
+        [CanBeNull]
+        internal AssetInfo GetAssetInfo(uint crc)
+        {
+            if (_crcDict.TryGetValue(crc, out var info))
+            {
+                return info;
+            }
+
+            Debug.LogError($"不存在资源:crc[{crc}]");
             return null;
         }
 

@@ -153,11 +153,7 @@ namespace Breakdawn.Core
         public void RemoveFirst()
         {
             var first = _list.First;
-            if (!_nodeDict.ContainsKey(first.Value))
-            {
-                throw new Exception($"链表中存在该元素，字典中不存在，这是个bug！");
-            }
-
+            KeyCheck(first.Value);
             _nodeDict.Remove(first.Value);
             _list.RemoveFirst();
         }
@@ -165,11 +161,7 @@ namespace Breakdawn.Core
         public void RemoveLast()
         {
             var last = _list.Last;
-            if (!_nodeDict.ContainsKey(last.Value))
-            {
-                throw new Exception($"链表中存在该元素，字典中不存在，这是个bug！");
-            }
-
+            KeyCheck(last.Value);
             _nodeDict.Remove(last.Value);
             _list.RemoveLast();
         }
@@ -184,6 +176,14 @@ namespace Breakdawn.Core
             if (_nodeDict.ContainsKey(node))
             {
                 throw new ArgumentException("不能插入重复元素");
+            }
+        }
+
+        private void KeyCheck(T node)
+        {
+            if (!_nodeDict.ContainsKey(node))
+            {
+                throw new Exception($"链表中存在该元素，字典中不存在，这是个bug！");
             }
         }
     }
