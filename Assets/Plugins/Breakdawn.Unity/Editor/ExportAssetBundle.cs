@@ -209,9 +209,9 @@ namespace Breakdawn.Unity.Editor
         {
             var config = new AssetConfig
             {
-                assetList = new List<AssetInfo>() //,
-                //path = _exportPath
+                assetList = new List<AssetInfo>()
             };
+            var crc32 = new CRC32();
             foreach (var path in resPath.Keys)
             {
                 var resDepend = AssetDatabase.GetDependencies(path);
@@ -241,10 +241,9 @@ namespace Breakdawn.Unity.Editor
 
                 var abBase = new AssetInfo
                 {
-                    path = path,
-                    crc = CRC32.Get(path),
+                    crc = crc32.Get(path),
                     abName = resPath[path],
-                    assetName = path.Remove(0, path.LastIndexOf("/", StringComparison.Ordinal) + 1),
+                    assetName = path,
                     dependABs = dependList,
                     hash = manifest.GetAssetBundleHash(resPath[path]).ToString()
                 };
@@ -259,7 +258,6 @@ namespace Breakdawn.Unity.Editor
             writer.Close();
             fileStream.Close();
 
-            config.assetList.ForEach(ab => { ab.assetName = string.Empty; });
             var bytePath = $"{_exportPath}/AssetConfig.config";
             var fs = new FileStream(bytePath, FileMode.Create, FileAccess.Write, FileShare.Write);
             var binary = new BinaryFormatter();

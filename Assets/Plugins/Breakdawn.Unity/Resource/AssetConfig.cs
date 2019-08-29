@@ -17,7 +17,6 @@ namespace Breakdawn.Unity
     [Serializable]
     public class AssetInfo
     {
-        [XmlElement("path")] public string path;
         [XmlElement("crc")] public uint crc;
         [XmlElement("hash")] public string hash;
         [XmlElement("abName")] public string abName;

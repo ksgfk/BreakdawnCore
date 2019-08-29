@@ -71,9 +71,6 @@ namespace Breakdawn.Unity
 
             foreach (var list in config.assetList)
             {
-                list.assetName = list.path;//资源名就是资源路径
-                list.hash = null;
-
                 if (_crcDict.ContainsKey(list.crc))
                 {
                     Debug.LogWarning($"重复CRC!:ab[{list.abName}],assetName[{list.assetName}],crc[{list.crc}]");
