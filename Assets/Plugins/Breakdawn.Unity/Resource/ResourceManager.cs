@@ -14,7 +14,7 @@ namespace Breakdawn.Unity
         internal DateTime lastUseTime;
         private int _refCount;
 
-        public int RefCount
+        internal int RefCount
         {
             get => _refCount;
             set
@@ -35,7 +35,7 @@ namespace Breakdawn.Unity
     }
 
     /// <summary>
-    /// TODO:清理资源时要清理_nameDict和_noRefAssets
+    /// TODO:基本可以清理资源了，但有个小问题，若用户没有释放资源，又向同一个字段GetAsset，可能会有问题...
     /// </summary>
     public class ResourceManager : Singleton<ResourceManager>
     {
@@ -56,8 +56,7 @@ namespace Breakdawn.Unity
         /// <param name="name">资源名</param>
         /// <param name="refCount">引用该资源的数量</param>
         /// <typeparam name="T">资源类型</typeparam>
-        [CanBeNull]
-        public T GetAsset<T>(string name, int refCount = 1) where T : Object
+        public UnityObjectInfo<T> GetAsset<T>(string name, int refCount = 1) where T : Object
         {
             return GetAsset<T>(GetAsset(name), refCount);
         }
@@ -68,18 +67,16 @@ namespace Breakdawn.Unity
         /// <param name="crc">资源CRC32值</param>
         /// <param name="refCount">引用该资源的数量</param>
         /// <typeparam name="T">资源类型</typeparam>
-        [CanBeNull]
-        public T GetAsset<T>(uint crc, int refCount = 1) where T : Object
+        public UnityObjectInfo<T> GetAsset<T>(uint crc, int refCount = 1) where T : Object
         {
             return GetAsset<T>(GetAsset(crc), refCount);
         }
 
-        [CanBeNull]
-        private static T GetAsset<T>(Asset res, int refCount) where T : Object
+        private UnityObjectInfo<T> GetAsset<T>(Asset res, int refCount) where T : Object
         {
             if (res == null)
             {
-                return null;
+                return default;
             }
 
             if (refCount < 1)
@@ -92,7 +89,7 @@ namespace Breakdawn.Unity
                 var ab = AssetBundleManager.Instance.GetAssetBundle(res.assetInfo, true);
                 if (ab == null)
                 {
-                    return null;
+                    return default;
                 }
 
                 res.asset = ab.LoadAsset(res.assetInfo.assetName.Split('.')[0]);
@@ -102,12 +99,12 @@ namespace Breakdawn.Unity
             if (!(obj is T result))
             {
                 Debug.LogError($"类型错误，{typeof(T).FullName}");
-                return null;
+                return default;
             }
 
             res.RefCount += refCount;
             res.lastUseTime = DateTime.Now;
-            return result;
+            return new UnityObjectInfo<T>(result, res.assetInfo.assetName);
         }
 
         [CanBeNull]
@@ -116,6 +113,22 @@ namespace Breakdawn.Unity
             if (_nameDict.TryGetValue(name, out var asset))
             {
                 return asset;
+            }
+
+            Asset result = null;
+            foreach (var ass in _noRefAssets)
+            {
+                if (ass.assetInfo.assetName == name)
+                {
+                    result = ass;
+                }
+            }
+
+            if (result != null)
+            {
+                _noRefAssets.Remove(result);
+                _nameDict.Add(name, result);
+                return result;
             }
 
             var info = AssetBundleManager.Instance.GetAssetInfo(name);
@@ -141,6 +154,51 @@ namespace Breakdawn.Unity
 
             Debug.LogError($"不存在资源:crc[{crc}]");
             return null;
+        }
+
+        private void RecycleAsset(Asset res, bool isCache)
+        {
+            res.RefCount--;
+            if (res.RefCount > 0)
+            {
+                return;
+            }
+
+            if (!_nameDict.Remove(res.assetInfo.assetName))
+            {
+                Debug.LogError($"字典中不存在资源:{res.assetInfo.assetName}，可能多次释放该资源");
+                return;
+            }
+
+            if (isCache)
+            {
+                _noRefAssets.AddFirst(res);
+            }
+            else
+            {
+                AssetBundleManager.Instance.ReleaseAsset(res.assetInfo);
+                res.asset = null;
+            }
+        }
+
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        /// <param name="obj">Unity资源，如果成功释放，则会将引用的值置空</param>
+        /// <param name="isCache">是否缓存，以便下次使用</param>
+        /// <typeparam name="T">资源类型</typeparam>
+        /// <exception cref="ArgumentException">资源不存在时抛出</exception>
+        public bool RecycleAsset<T>(ref UnityObjectInfo<T> obj, bool isCache = true) where T : Object
+        {
+            if (!_nameDict.TryGetValue(obj.rawName, out var ass))
+            {
+                Debug.LogError($"无法找到资源{obj.rawName}，这可能是Bug！");
+                return false;
+            }
+
+            RecycleAsset(ass, isCache);
+            obj = default;
+            return true;
         }
     }
 }
