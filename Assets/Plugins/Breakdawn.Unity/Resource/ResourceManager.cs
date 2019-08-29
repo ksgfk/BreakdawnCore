@@ -54,8 +54,9 @@ namespace Breakdawn.Unity
         /// 同步加载资源
         /// </summary>
         /// <param name="name">资源名</param>
-        /// <param name="refCount">引用该资源的数量</param>
+        /// <param name="refCount">引用该资源的次数</param>
         /// <typeparam name="T">资源类型</typeparam>
+        [Obsolete("如果你对一个没有被RecycleAsset方法回收过的字段，调用该方法赋值，可能会造成资源无法回收")]
         public UnityObjectInfo<T> GetAsset<T>(string name, int refCount = 1) where T : Object
         {
             return GetAsset<T>(GetAsset(name), refCount);
@@ -64,15 +65,59 @@ namespace Breakdawn.Unity
         /// <summary>
         /// 同步加载资源
         /// </summary>
+        /// <param name="name">资源名</param>
+        /// <param name="result">返回的资源本体</param>
+        /// <param name="refCount">引用该资源的次数</param>
+        /// <typeparam name="T">资源类型</typeparam>
+        public void GetAsset<T>(string name, ref UnityObjectInfo<T> result, int refCount = 1) where T : Object
+        {
+            if (CheckParameter(result))
+            {
+                result = GetAsset<T>(GetAsset(name), refCount);
+            }
+            else
+            {
+                Debug.LogWarning($"参数{nameof(result)}已经有值了，不可以重复赋值");
+            }
+        }
+
+        private static bool CheckParameter<T>(UnityObjectInfo<T> param) where T : Object
+        {
+            return param.obj == null && string.IsNullOrEmpty(param.rawName);
+        }
+
+        /// <summary>
+        /// 同步加载资源
+        /// </summary>
         /// <param name="crc">资源CRC32值</param>
         /// <param name="refCount">引用该资源的数量</param>
         /// <typeparam name="T">资源类型</typeparam>
+        [Obsolete("如果你对一个没有被RecycleAsset方法回收过的字段，调用该方法赋值，可能会造成资源无法回收")]
         public UnityObjectInfo<T> GetAsset<T>(uint crc, int refCount = 1) where T : Object
         {
             return GetAsset<T>(GetAsset(crc), refCount);
         }
 
-        private UnityObjectInfo<T> GetAsset<T>(Asset res, int refCount) where T : Object
+        /// <summary>
+        /// 同步加载资源
+        /// </summary>
+        /// <param name="crc">资源CRC32值</param>
+        /// <param name="result">返回的资源本体</param>
+        /// <param name="refCount">引用该资源的次数</param>
+        /// <typeparam name="T">资源类型</typeparam>
+        public void GetAsset<T>(uint crc, ref UnityObjectInfo<T> result, int refCount = 1) where T : Object
+        {
+            if (CheckParameter(result))
+            {
+                result = GetAsset<T>(GetAsset(crc), refCount);
+            }
+            else
+            {
+                Debug.LogWarning($"参数{nameof(result)}已经有值了，不可以重复赋值");
+            }
+        }
+
+        private static UnityObjectInfo<T> GetAsset<T>(Asset res, int refCount) where T : Object
         {
             if (res == null)
             {

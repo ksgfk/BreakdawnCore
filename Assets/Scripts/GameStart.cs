@@ -17,7 +17,7 @@ namespace Breakdawn.Test
 
         private void Start()
         {
-            _attackPrefab = ResourceManager.Instance.GetAsset<GameObject>("Attack.prefab");
+            ResourceManager.Instance.GetAsset("Attack.prefab", ref _attackPrefab);
             _attack = Instantiate(_attackPrefab.obj);
             var a = AssetBundleManager.Instance;
         }
@@ -33,9 +33,9 @@ namespace Breakdawn.Test
 
         public void OnAnotherButtonClick()
         {
-            _attackPrefab = ResourceManager.Instance.GetAsset<GameObject>("Attack.prefab");
+            ResourceManager.Instance.GetAsset("Attack.prefab", ref _attackPrefab);
             _attack = Instantiate(_attackPrefab.obj);
-            
+
             var a = AssetBundleManager.Instance;
             var b = ResourceManager.Instance;
         }
