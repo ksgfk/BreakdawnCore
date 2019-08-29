@@ -259,7 +259,7 @@ namespace Breakdawn.Unity.Editor
             writer.Close();
             fileStream.Close();
 
-            config.assetList.ForEach(ab => ab.path = string.Empty);
+            config.assetList.ForEach(ab => { ab.assetName = string.Empty; });
             var bytePath = $"{_exportPath}/AssetConfig.config";
             var fs = new FileStream(bytePath, FileMode.Create, FileAccess.Write, FileShare.Write);
             var binary = new BinaryFormatter();

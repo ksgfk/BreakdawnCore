@@ -19,7 +19,7 @@ namespace Breakdawn.Test
 //            _pool.OnGetObject += go => go.Show();
 //            _pool.OnRecycling += go => go.Hide();
 //            _pool.OnRelease += Destroy;
-                AssetBundleManager.Instance.LoadConfig(Application.streamingAssetsPath);
+//            AssetBundleManager.Instance.Init(Application.streamingAssetsPath);
         }
 
 //        private float _last;

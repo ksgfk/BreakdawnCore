@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -7,7 +8,7 @@ using UnityEngine;
 
 namespace Breakdawn.Unity
 {
-    public class AssetBundleRef
+    internal class AssetBundleRef
     {
         public readonly AssetBundle assetBundle;
         internal int refCount;
@@ -38,11 +39,24 @@ namespace Breakdawn.Unity
         /// </summary>
         private readonly Dictionary<string, AssetBundleRef> _abDict = new Dictionary<string, AssetBundleRef>();
 
+        private bool _isInit;
+
         private AssetBundleManager()
         {
         }
 
-        public bool LoadConfig(string path)
+        public void Init(string path)
+        {
+            if (_isInit)
+            {
+                Debug.LogError($"不可重复初始化!");
+                return;
+            }
+
+            _isInit = LoadConfig(path);
+        }
+
+        private bool LoadConfig(string path)
         {
             var fileStream = new FileStream(path + configName, FileMode.Open, FileAccess.Read, FileShare.Read);
             var binary = new BinaryFormatter();
@@ -57,6 +71,9 @@ namespace Breakdawn.Unity
 
             foreach (var list in config.assetList)
             {
+                list.assetName = list.path;//资源名就是资源路径
+                list.hash = null;
+
                 if (_crcDict.ContainsKey(list.crc))
                 {
                     Debug.LogWarning($"重复CRC!:ab[{list.abName}],assetName[{list.assetName}],crc[{list.crc}]");
@@ -79,6 +96,14 @@ namespace Breakdawn.Unity
             return true;
         }
 
+        private void CheckInit()
+        {
+            if (!_isInit)
+            {
+                throw new InvalidOperationException($"AssetBundleManager未初始化!");
+            }
+        }
+
         /// <summary>
         /// 获取AB包
         /// </summary>
@@ -88,6 +113,7 @@ namespace Breakdawn.Unity
         [CanBeNull]
         public AssetBundle GetAssetBundle(string name, bool isRefAsset = false)
         {
+            CheckInit();
             AssetBundleRef result;
             if (_abDict.TryGetValue(name, out var abRef))
             {
@@ -148,6 +174,7 @@ namespace Breakdawn.Unity
         [CanBeNull]
         internal AssetInfo GetAssetInfo(string name)
         {
+            CheckInit();
             if (_nameDict.TryGetValue(name, out var info))
             {
                 return info;
@@ -160,6 +187,7 @@ namespace Breakdawn.Unity
         [CanBeNull]
         internal AssetInfo GetAssetInfo(uint crc)
         {
+            CheckInit();
             if (_crcDict.TryGetValue(crc, out var info))
             {
                 return info;
@@ -182,6 +210,7 @@ namespace Breakdawn.Unity
 
         public void ReleaseAsset(AssetInfo assetInfo)
         {
+            CheckInit();
             if (!_abDict.TryGetValue(assetInfo.abName, out var abRef))
             {
                 Debug.LogError($"AB包未加载，name:{assetInfo.abName}");

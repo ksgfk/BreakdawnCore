@@ -1,13 +1,15 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Breakdawn.Core;
 using JetBrains.Annotations;
+using UnityEditor.PackageManager;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace Breakdawn.Unity
 {
-    public class Asset
+    internal class Asset
     {
         public readonly AssetInfo assetInfo;
         public Object asset;
@@ -34,9 +36,6 @@ namespace Breakdawn.Unity
         }
     }
 
-    /// <summary>
-    /// TODO:基本可以清理资源了，但有个小问题，若用户没有释放资源，又向同一个字段GetAsset，可能会有问题...
-    /// </summary>
     public class ResourceManager : Singleton<ResourceManager>
     {
         /// <summary>
@@ -44,11 +43,64 @@ namespace Breakdawn.Unity
         /// </summary>
         private readonly FastLinkedList<Asset> _noRefAssets = new FastLinkedList<Asset>();
 
+        /// <summary>
+        /// 正在使用的资源
+        /// </summary>
         private readonly Dictionary<string, Asset> _nameDict = new Dictionary<string, Asset>();
+
+        private MonoBehaviour _script;
+        private bool _isInitAsync;
+        private Coroutine _asyncThread;
+        private List<AsyncLoadData>[] _data;
+        private Dictionary<string, AsyncLoadData> _loading;
+
+        public delegate void OnLoadAssetAsyncFinish(string path, Object obj);
 
         private ResourceManager()
         {
         }
+
+        public void InitAsync(MonoBehaviour script)
+        {
+            if (script == null)
+            {
+                Debug.LogWarning($"参数{nameof(script)}为空");
+                return;
+            }
+
+            _loading = new Dictionary<string, AsyncLoadData>();
+            var priorityCount = Enum.GetNames(typeof(AsyncLoadPriority)).Length;
+            _data = new List<AsyncLoadData>[priorityCount];
+            for (var i = 0; i < priorityCount; i++)
+            {
+                _data[i] = new List<AsyncLoadData>();
+            }
+
+            _script = script;
+            _asyncThread = _script.StartCoroutine(AsyncLoad());
+            _isInitAsync = true;
+        }
+
+        [CanBeNull]
+        private Asset GetAssetFromPools(string name)
+        {
+            if (_nameDict.TryGetValue(name, out var result))
+            {
+                return result;
+            }
+
+            foreach (var ass in _noRefAssets)
+            {
+                if (ass.assetInfo.assetName == name)
+                {
+                    result = ass;
+                }
+            }
+
+            return result;
+        }
+
+        #region 同步加载
 
         /// <summary>
         /// 同步加载资源
@@ -79,11 +131,6 @@ namespace Breakdawn.Unity
             {
                 Debug.LogWarning($"参数{nameof(result)}已经有值了，不可以重复赋值");
             }
-        }
-
-        private static bool CheckParameter<T>(UnityObjectInfo<T> param) where T : Object
-        {
-            return param.obj == null && string.IsNullOrEmpty(param.rawName);
         }
 
         /// <summary>
@@ -137,13 +184,21 @@ namespace Breakdawn.Unity
                     return default;
                 }
 
-                res.asset = ab.LoadAsset(res.assetInfo.assetName.Split('.')[0]);
+                var start = res.assetInfo.assetName.LastIndexOf('/');
+                var end = res.assetInfo.assetName.LastIndexOf('.');
+                var name = res.assetInfo.assetName.Substring(start + 1, end - start - 1);
+                res.asset = ab.LoadAsset(name);
+                if (res.asset == null)
+                {
+                    Debug.LogError($"资源加载失败，name[{res.assetInfo.assetName}]");
+                    return default;
+                }
             }
 
             var obj = res.asset;
             if (!(obj is T result))
             {
-                Debug.LogError($"类型错误，{typeof(T).FullName}");
+                Debug.LogError($"类型错误，T:{typeof(T).FullName}，应为{obj.GetType().FullName}");
                 return default;
             }
 
@@ -155,20 +210,7 @@ namespace Breakdawn.Unity
         [CanBeNull]
         private Asset GetAsset(string name)
         {
-            if (_nameDict.TryGetValue(name, out var asset))
-            {
-                return asset;
-            }
-
-            Asset result = null;
-            foreach (var ass in _noRefAssets)
-            {
-                if (ass.assetInfo.assetName == name)
-                {
-                    result = ass;
-                }
-            }
-
+            var result = GetAssetFromPools(name);
             if (result != null)
             {
                 _noRefAssets.Remove(result);
@@ -183,7 +225,7 @@ namespace Breakdawn.Unity
                 return null;
             }
 
-            asset = new Asset(info);
+            var asset = new Asset(info);
             _nameDict.Add(name, asset);
             return asset;
         }
@@ -200,6 +242,43 @@ namespace Breakdawn.Unity
             Debug.LogError($"不存在资源:crc[{crc}]");
             return null;
         }
+
+        #endregion
+
+        #region 异步加载
+
+        private IEnumerator AsyncLoad()
+        {
+            while (true)
+            {
+                yield return null;
+            }
+        }
+
+        public void GetAssetAsync(string name, OnLoadAssetAsyncFinish finish, AsyncLoadPriority priority)
+        {
+            var asset = GetAssetFromPools(name);
+            if (asset != null)
+            {
+                finish?.Invoke(name, asset.asset);
+            }
+
+            if (_loading.ContainsKey(name))
+            {
+                Debug.LogWarning($"资源{name}已经在加载了");
+                return;
+            }
+        }
+
+        private void CheckAsyncFeatureInit()
+        {
+            if (!_isInitAsync)
+            {
+                throw new InvalidOperationException($"ResourceManager异步加载功能未初始化!");
+            }
+        }
+
+        #endregion
 
         private void RecycleAsset(Asset res, bool isCache)
         {
@@ -244,6 +323,11 @@ namespace Breakdawn.Unity
             RecycleAsset(ass, isCache);
             obj = default;
             return true;
+        }
+
+        private static bool CheckParameter<T>(UnityObjectInfo<T> param) where T : Object
+        {
+            return param.obj == null && string.IsNullOrEmpty(param.rawName);
         }
     }
 }
