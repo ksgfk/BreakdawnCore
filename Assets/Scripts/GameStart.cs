@@ -9,6 +9,7 @@ namespace Breakdawn.Test
     public class GameStart : MonoBehaviour
     {
         private UnityObjectInfo<GameObject> _attackPrefab;
+        private UnityObjectInfo<GameObject> _a;
         private GameObject _attack;
 
         private UnityObjectInfo<AudioClip> _testClip;
@@ -25,26 +26,36 @@ namespace Breakdawn.Test
                 "Attack.prefab",
                 Paths.Assets,
                 Paths.Prefabs);
-            _attack = Instantiate(_attackPrefab.obj);
+            
+            ResourceManager.Instance.GetAsset(ref _a,
+                "Attack.prefab",
+                Paths.Assets,
+                Paths.Prefabs);
 
+            _attack = Instantiate(_attackPrefab.obj);
             ResourceManager.Instance.GetAsset(ref _testClip,
                 "senlin.mp3",
                 Paths.Assets,
                 Paths.Sounds);
             source.clip = _testClip.obj;
             source.Play();
+
+            var a = AssetBundleManager.Instance;
         }
 
         public void OnButtonClick()
         {
             Destroy(_attack);
-            ResourceManager.Instance.RecycleAsset(ref _attackPrefab, false);
+            ResourceManager.Instance.RecycleAsset(ref _attackPrefab);
             var a = AssetBundleManager.Instance;
         }
 
         public void OnAnotherButtonClick()
         {
-//            ResourceManager.Instance.GetAsset("Attack.prefab", ref _attackPrefab);
+//            ResourceManager.Instance.GetAsset(ref _attackPrefab,
+//                "Attack.prefab",
+//                Paths.Assets,
+//                Paths.Prefabs);
 //            _attack = Instantiate(_attackPrefab.obj);
 //
 //            var a = AssetBundleManager.Instance;
@@ -52,8 +63,8 @@ namespace Breakdawn.Test
 
             source.Stop();
             source.clip = null;
-            ResourceManager.Instance.RecycleAsset(ref _testClip, false);
-            var a = AssetBundleManager.Instance;
+            ResourceManager.Instance.RecycleAsset(ref _testClip);
+            var c = AssetBundleManager.Instance;
         }
     }
 }

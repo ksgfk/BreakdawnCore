@@ -72,6 +72,16 @@ namespace Breakdawn.Unity
                 }
             }
 
+            if (result == null)
+            {
+                return null;
+            }
+
+            if (!_noRef.Remove(result))
+            {
+                throw new InvalidOperationException("不可能删除失败的，除非FastLinkedList有bug");
+            }
+
             return result;
         }
 
@@ -142,13 +152,12 @@ namespace Breakdawn.Unity
         private Asset GetAsset(string name)
         {
             var result = GetAssetFromPools(name);
-            if (result == null)
+            if (result != null)
             {
-                return CacheAsset(name);
+                return result;
             }
 
-            _noRef.Remove(result);
-            _nameDict.Add(name, result);
+            result = CacheAsset(name);
             return result;
         }
 
@@ -331,6 +340,11 @@ namespace Breakdawn.Unity
         /// <exception cref="ArgumentException">资源不存在时抛出</exception>
         public bool RecycleAsset<T>(ref UnityObjectInfo<T> obj, bool isCache = true) where T : Object
         {
+            if (CheckParameter(obj))
+            {
+                return false;
+            }
+
             if (!_nameDict.TryGetValue(obj.rawName, out var ass))
             {
                 Debug.LogError($"无法找到资源{obj.rawName}，这可能是Bug！");
@@ -342,6 +356,7 @@ namespace Breakdawn.Unity
             return true;
         }
 
+        [CanBeNull]
         private Asset CacheAsset(string name)
         {
             var info = AssetBundleManager.Instance.GetAssetInfo(name);

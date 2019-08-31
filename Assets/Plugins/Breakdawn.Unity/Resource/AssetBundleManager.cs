@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Breakdawn.Unity
 {
-    internal class AssetBundleRef
+    internal struct AssetBundleRef
     {
         public readonly AssetBundle assetBundle;
         internal int refCount;
@@ -99,12 +99,7 @@ namespace Breakdawn.Unity
         private AssetBundle GetAssetBundle(string name, bool isRefAsset = false)
         {
             CheckInit();
-            AssetBundleRef result;
-            if (_abDict.TryGetValue(name, out var abRef))
-            {
-                result = abRef;
-            }
-            else
+            if (!_abDict.TryGetValue(name, out var abRef))
             {
                 var fullABPath = $"{Application.streamingAssetsPath}/{name}";
                 var ab = LoadAssetBundle(fullABPath);
@@ -114,16 +109,18 @@ namespace Breakdawn.Unity
                     return null;
                 }
 
-                result = new AssetBundleRef(ab);
-                _abDict.Add(name, result);
+                abRef = new AssetBundleRef(ab);
+                _abDict.Add(name, abRef);
             }
 
-            if (isRefAsset)
+            if (!isRefAsset)
             {
-                result.refCount++;
+                return abRef.assetBundle;
             }
 
-            return result.assetBundle;
+            abRef.refCount++;
+            _abDict[name] = abRef;
+            return abRef.assetBundle;
         }
 
         /// <summary>
@@ -154,13 +151,7 @@ namespace Breakdawn.Unity
         internal AssetInfo GetAssetInfo(string name)
         {
             CheckInit();
-            if (_nameDict.TryGetValue(name, out var info))
-            {
-                return info;
-            }
-
-            Debug.LogError($"不存在资源:name[{name}]");
-            return null;
+            return _nameDict.TryGetValue(name, out var info) ? info : null;
         }
 
         private void ProcessDepend(IEnumerable<string> depends)
