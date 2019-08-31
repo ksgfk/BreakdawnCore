@@ -8,7 +8,6 @@ namespace Breakdawn.Unity
     public class AssetConfig
     {
         [XmlElement("assetList")] public List<AssetInfo> assetList;
-        [XmlElement("path")] public string path;
     }
 
     /// <summary>
@@ -17,7 +16,6 @@ namespace Breakdawn.Unity
     [Serializable]
     public class AssetInfo
     {
-        [XmlElement("crc")] public uint crc;
         [XmlElement("hash")] public string hash;
         [XmlElement("abName")] public string abName;
         [XmlAttribute("assetName")] public string assetName;

@@ -22,13 +22,6 @@ namespace Breakdawn.Unity
 
     public class AssetBundleManager : Singleton<AssetBundleManager>
     {
-        public string configName = "/AssetConfig.config";
-
-        /// <summary>
-        /// 资源配置表，key:导出时资源路径CRC32，value:资源信息
-        /// </summary>
-        private readonly Dictionary<uint, AssetInfo> _crcDict = new Dictionary<uint, AssetInfo>();
-
         /// <summary>
         /// 资源配置表，key:资源名，value:资源信息
         /// </summary>
@@ -56,9 +49,14 @@ namespace Breakdawn.Unity
             _isInit = LoadConfig(path);
         }
 
+        public void Init(string fileName, params string[] paths)
+        {
+            Init(new PathBuilder(string.Empty, fileName, paths).Get());
+        }
+
         private bool LoadConfig(string path)
         {
-            var fileStream = new FileStream(path + configName, FileMode.Open, FileAccess.Read, FileShare.Read);
+            var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
             var binary = new BinaryFormatter();
             var config = binary.Deserialize(fileStream) as AssetConfig;
             fileStream.Close();
@@ -71,18 +69,9 @@ namespace Breakdawn.Unity
 
             foreach (var list in config.assetList)
             {
-                if (_crcDict.ContainsKey(list.crc))
-                {
-                    Debug.LogWarning($"重复CRC!:ab[{list.abName}],assetName[{list.assetName}],crc[{list.crc}]");
-                }
-                else
-                {
-                    _crcDict.Add(list.crc, list);
-                }
-
                 if (_nameDict.ContainsKey(list.assetName))
                 {
-                    Debug.LogWarning($"重复资源!:ab[{list.abName}],assetName[{list.assetName}],crc[{list.crc}]");
+                    Debug.LogWarning($"重复资源!:ab[{list.abName}],assetName[{list.assetName}]");
                 }
                 else
                 {
@@ -107,7 +96,7 @@ namespace Breakdawn.Unity
         /// <param name="name">包名</param>
         /// <param name="isRefAsset">是否有资源引用该包</param>
         [CanBeNull]
-        public AssetBundle GetAssetBundle(string name, bool isRefAsset = false)
+        private AssetBundle GetAssetBundle(string name, bool isRefAsset = false)
         {
             CheckInit();
             AssetBundleRef result;
@@ -140,10 +129,10 @@ namespace Breakdawn.Unity
         /// <summary>
         /// 获取AB包，会加载依赖项
         /// </summary>
-        /// <param name="name">包名</param>
+        /// <param name="assetInfo">包名</param>
         /// <param name="isRefAsset">是否有资源引用该包</param>
         [CanBeNull]
-        public AssetBundle GetAssetBundle(AssetInfo assetInfo, bool isRefAsset = false)
+        internal AssetBundle GetAssetBundle(AssetInfo assetInfo, bool isRefAsset = false)
         {
             var abRef = GetAssetBundle(assetInfo.abName, isRefAsset);
             ProcessDepend(assetInfo.dependABs);
@@ -153,21 +142,10 @@ namespace Breakdawn.Unity
         /// <summary>
         /// 获取资源所在的AssetBundle
         /// </summary>
-        /// <param name="crc">该资源的CRC32值</param>
-        /// <returns>AB引用</returns>
-        [CanBeNull]
-        public AssetBundle GetAssetDependAB(uint crc)
-        {
-            return GetAssetBundle(GetAssetInfo(crc));
-        }
-
-        /// <summary>
-        /// 获取资源所在的AssetBundle
-        /// </summary>
         /// <param name="name">该资源的完整名称，带后缀</param>
         /// <returns>AB引用</returns>
         [CanBeNull]
-        public AssetBundle GetAssetDependAB(string name)
+        internal AssetBundle GetAssetDependAB(string name)
         {
             return GetAssetBundle(GetAssetInfo(name));
         }
@@ -185,19 +163,6 @@ namespace Breakdawn.Unity
             return null;
         }
 
-        [CanBeNull]
-        internal AssetInfo GetAssetInfo(uint crc)
-        {
-            CheckInit();
-            if (_crcDict.TryGetValue(crc, out var info))
-            {
-                return info;
-            }
-
-            Debug.LogError($"不存在资源:crc[{crc}]");
-            return null;
-        }
-
         private void ProcessDepend(IEnumerable<string> depends)
         {
             foreach (var depend in depends)
@@ -209,7 +174,7 @@ namespace Breakdawn.Unity
             }
         }
 
-        public void ReleaseAsset(AssetInfo assetInfo)
+        internal void ReleaseAsset(AssetInfo assetInfo)
         {
             CheckInit();
             if (!_abDict.TryGetValue(assetInfo.abName, out var abRef))
@@ -234,16 +199,6 @@ namespace Breakdawn.Unity
         public void ReleaseAsset(string name)
         {
             if (!_nameDict.TryGetValue(name, out var info))
-            {
-                return;
-            }
-
-            ReleaseAsset(info);
-        }
-
-        public void ReleaseAsset(uint crc)
-        {
-            if (!_crcDict.TryGetValue(crc, out var info))
             {
                 return;
             }

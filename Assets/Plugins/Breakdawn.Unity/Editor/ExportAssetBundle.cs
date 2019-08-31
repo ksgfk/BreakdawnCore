@@ -5,7 +5,6 @@ using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Xml.Serialization;
-using Breakdawn.Core;
 using UnityEditor;
 using UnityEngine;
 
@@ -211,7 +210,7 @@ namespace Breakdawn.Unity.Editor
             {
                 assetList = new List<AssetInfo>()
             };
-            var crc32 = new CRC32();
+            //var crc32 = new CRC32();
             foreach (var path in resPath.Keys)
             {
                 var resDepend = AssetDatabase.GetDependencies(path);
@@ -241,7 +240,6 @@ namespace Breakdawn.Unity.Editor
 
                 var abBase = new AssetInfo
                 {
-                    crc = crc32.Get(path),
                     abName = resPath[path],
                     assetName = path,
                     dependABs = dependList,

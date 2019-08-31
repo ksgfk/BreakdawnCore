@@ -37,7 +37,7 @@ namespace Breakdawn.Unity
             this.assetInfo = assetInfo;
         }
     }
-    
+
     public class ResourceManager : Singleton<ResourceManager>
     {
         private ResourceManager()
@@ -80,37 +80,22 @@ namespace Breakdawn.Unity
         /// </summary>
         /// <param name="name">资源名</param>
         /// <param name="result">返回的资源本体</param>
-        /// <param name="refCount">引用该资源的次数</param>
         /// <typeparam name="T">资源类型</typeparam>
-        public void GetAsset<T>(string name, ref UnityObjectInfo<T> result, int refCount = 1) where T : Object
+        public void GetAsset<T>(string name, ref UnityObjectInfo<T> result) where T : Object
         {
             if (CheckParameter(result))
             {
-                result = GetAsset<T>(GetAsset(name), refCount);
+                result = GetAsset<T>(GetAsset(name), 1);
             }
             else
             {
-                Debug.LogWarning($"参数{nameof(result)}已经有值了，不可以重复赋值");
+                throw new ArgumentException($"参数{nameof(result)}已经有值了，不可以重复赋值");
             }
         }
 
-        /// <summary>
-        /// 同步加载资源
-        /// </summary>
-        /// <param name="crc">资源CRC32值</param>
-        /// <param name="result">返回的资源本体</param>
-        /// <param name="refCount">引用该资源的次数</param>
-        /// <typeparam name="T">资源类型</typeparam>
-        public void GetAsset<T>(uint crc, ref UnityObjectInfo<T> result, int refCount = 1) where T : Object
+        public void GetAsset<T>(ref UnityObjectInfo<T> result, string fileName, params string[] paths) where T : Object
         {
-            if (CheckParameter(result))
-            {
-                result = GetAsset<T>(GetAsset(crc), refCount);
-            }
-            else
-            {
-                Debug.LogWarning($"参数{nameof(result)}已经有值了，不可以重复赋值");
-            }
+            GetAsset(new PathBuilder(string.Empty, fileName, paths).Get(), ref result);
         }
 
         private static UnityObjectInfo<T> GetAsset<T>(Asset res, int refCount) where T : Object
@@ -165,19 +150,6 @@ namespace Breakdawn.Unity
             _noRef.Remove(result);
             _nameDict.Add(name, result);
             return result;
-        }
-
-        [CanBeNull]
-        private Asset GetAsset(uint crc)
-        {
-            var info = AssetBundleManager.Instance.GetAssetInfo(crc);
-            if (info != null)
-            {
-                return GetAsset(info.assetName);
-            }
-
-            Debug.LogError($"不存在资源:crc[{crc}]");
-            return null;
         }
 
         #endregion
