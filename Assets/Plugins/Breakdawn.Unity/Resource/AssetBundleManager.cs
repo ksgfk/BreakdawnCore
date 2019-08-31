@@ -102,11 +102,10 @@ namespace Breakdawn.Unity
         }
 
         /// <summary>
-        /// 获取AB包
+        /// 获取AB包，不会加载依赖项
         /// </summary>
         /// <param name="name">包名</param>
         /// <param name="isRefAsset">是否有资源引用该包</param>
-        /// <returns></returns>
         [CanBeNull]
         public AssetBundle GetAssetBundle(string name, bool isRefAsset = false)
         {
@@ -138,6 +137,11 @@ namespace Breakdawn.Unity
             return result.assetBundle;
         }
 
+        /// <summary>
+        /// 获取AB包，会加载依赖项
+        /// </summary>
+        /// <param name="name">包名</param>
+        /// <param name="isRefAsset">是否有资源引用该包</param>
         [CanBeNull]
         public AssetBundle GetAssetBundle(AssetInfo assetInfo, bool isRefAsset = false)
         {
@@ -198,7 +202,7 @@ namespace Breakdawn.Unity
         {
             foreach (var depend in depends)
             {
-                if (!_abDict.TryGetValue(depend, out _))
+                if (!_abDict.ContainsKey(depend))
                 {
                     GetAssetBundle(depend, true);
                 }

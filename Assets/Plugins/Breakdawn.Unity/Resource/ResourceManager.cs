@@ -8,10 +8,13 @@ using Object = UnityEngine.Object;
 
 namespace Breakdawn.Unity
 {
-    internal class Asset
+    /// <summary>
+    /// 资源实例
+    /// </summary>
+    public class Asset
     {
         public readonly AssetInfo assetInfo;
-        public Object asset;
+        internal Object asset;
         internal DateTime lastUseTime;
         private int _refCount;
 
@@ -29,56 +32,29 @@ namespace Breakdawn.Unity
             }
         }
 
-        public Asset(AssetInfo assetInfo)
+        internal Asset(AssetInfo assetInfo)
         {
             this.assetInfo = assetInfo;
         }
     }
-
+    
     public class ResourceManager : Singleton<ResourceManager>
     {
+        private ResourceManager()
+        {
+        }
+
+        #region 同步加载
+
         /// <summary>
         /// 缓存没有被引用的资源
         /// </summary>
-        private readonly FastLinkedList<Asset> _noRefAssets = new FastLinkedList<Asset>();
+        private readonly FastLinkedList<Asset> _noRef = new FastLinkedList<Asset>();
 
         /// <summary>
         /// 正在使用的资源
         /// </summary>
         private readonly Dictionary<string, Asset> _nameDict = new Dictionary<string, Asset>();
-
-        private MonoBehaviour _script;
-        private bool _isInitAsync;
-        private Coroutine _asyncThread;
-        private List<AsyncLoadData>[] _data;
-        private Dictionary<string, AsyncLoadData> _loading;
-
-        public delegate void OnLoadAssetAsyncFinish(string path, Object obj);
-
-        private ResourceManager()
-        {
-        }
-
-        public void InitAsync(MonoBehaviour script)
-        {
-            if (script == null)
-            {
-                Debug.LogWarning($"参数{nameof(script)}为空");
-                return;
-            }
-
-            _loading = new Dictionary<string, AsyncLoadData>();
-            var priorityCount = Enum.GetNames(typeof(AsyncLoadPriority)).Length;
-            _data = new List<AsyncLoadData>[priorityCount];
-            for (var i = 0; i < priorityCount; i++)
-            {
-                _data[i] = new List<AsyncLoadData>();
-            }
-
-            _script = script;
-            _asyncThread = _script.StartCoroutine(AsyncLoad());
-            _isInitAsync = true;
-        }
 
         [CanBeNull]
         private Asset GetAssetFromPools(string name)
@@ -88,7 +64,7 @@ namespace Breakdawn.Unity
                 return result;
             }
 
-            foreach (var ass in _noRefAssets)
+            foreach (var ass in _noRef)
             {
                 if (ass.assetInfo.assetName == name)
                 {
@@ -97,20 +73,6 @@ namespace Breakdawn.Unity
             }
 
             return result;
-        }
-
-        #region 同步加载
-
-        /// <summary>
-        /// 同步加载资源
-        /// </summary>
-        /// <param name="name">资源名</param>
-        /// <param name="refCount">引用该资源的次数</param>
-        /// <typeparam name="T">资源类型</typeparam>
-        [Obsolete("如果你对一个没有被RecycleAsset方法回收过的字段，调用该方法赋值，可能会造成资源无法回收")]
-        public UnityObjectInfo<T> GetAsset<T>(string name, int refCount = 1) where T : Object
-        {
-            return GetAsset<T>(GetAsset(name), refCount);
         }
 
         /// <summary>
@@ -130,18 +92,6 @@ namespace Breakdawn.Unity
             {
                 Debug.LogWarning($"参数{nameof(result)}已经有值了，不可以重复赋值");
             }
-        }
-
-        /// <summary>
-        /// 同步加载资源
-        /// </summary>
-        /// <param name="crc">资源CRC32值</param>
-        /// <param name="refCount">引用该资源的数量</param>
-        /// <typeparam name="T">资源类型</typeparam>
-        [Obsolete("如果你对一个没有被RecycleAsset方法回收过的字段，调用该方法赋值，可能会造成资源无法回收")]
-        public UnityObjectInfo<T> GetAsset<T>(uint crc, int refCount = 1) where T : Object
-        {
-            return GetAsset<T>(GetAsset(crc), refCount);
         }
 
         /// <summary>
@@ -183,10 +133,7 @@ namespace Breakdawn.Unity
                     return default;
                 }
 
-                var start = res.assetInfo.assetName.LastIndexOf('/');
-                var end = res.assetInfo.assetName.LastIndexOf('.');
-                var name = res.assetInfo.assetName.Substring(start + 1, end - start - 1);
-                res.asset = ab.LoadAsset(name);
+                res.asset = ab.LoadAsset(GetRealNameFromAssetName(res.assetInfo.assetName));
                 if (res.asset == null)
                 {
                     Debug.LogError($"资源加载失败，name[{res.assetInfo.assetName}]");
@@ -210,23 +157,14 @@ namespace Breakdawn.Unity
         private Asset GetAsset(string name)
         {
             var result = GetAssetFromPools(name);
-            if (result != null)
+            if (result == null)
             {
-                _noRefAssets.Remove(result);
-                _nameDict.Add(name, result);
-                return result;
+                return CacheAsset(name);
             }
 
-            var info = AssetBundleManager.Instance.GetAssetInfo(name);
-            if (info == null)
-            {
-                Debug.LogError($"不存在资源:name[{name}]");
-                return null;
-            }
-
-            var asset = new Asset(info);
-            _nameDict.Add(name, asset);
-            return asset;
+            _noRef.Remove(result);
+            _nameDict.Add(name, result);
+            return result;
         }
 
         [CanBeNull]
@@ -246,30 +184,138 @@ namespace Breakdawn.Unity
 
         #region 异步加载
 
-        private IEnumerator AsyncLoad()
+        private MonoBehaviour _mono;
+        private Coroutine _loadCoroutine;
+        private readonly Queue<AsyncLoadRequest> _waiting = new Queue<AsyncLoadRequest>();
+
+        private readonly Dictionary<string, AsyncLoadRequest> _waitOrLoad =
+            new Dictionary<string, AsyncLoadRequest>();
+
+        private readonly FastLinkedList<AsyncLoadRequest> _noRefAsync = new FastLinkedList<AsyncLoadRequest>();
+
+        private readonly Dictionary<string, AsyncLoadRequest> _nameDictAsync =
+            new Dictionary<string, AsyncLoadRequest>();
+
+        private bool _isInitAsync;
+
+        public delegate void LoadComplete(AsyncLoadRequest obj);
+
+        public void Init(MonoBehaviour mono)
+        {
+            _mono = mono != null ? mono : throw new ArgumentNullException();
+            _isInitAsync = true;
+        }
+
+        private IEnumerator Load()
         {
             while (true)
             {
-                yield return null;
+                if (_waiting.IsEmpty())
+                {
+                    _mono.StopCoroutine(_loadCoroutine);
+                    _loadCoroutine = null;
+                    break;
+                }
+
+                var request = _waiting.Dequeue();
+
+                if (request.Request == null)
+                {
+                    request.Request =
+                        request.Bundle.LoadAssetAsync(GetRealNameFromAssetName(request.AssetName));
+                }
+
+                yield return request.Request;
+                if (request.IsDone)
+                {
+                    request.Asset.asset = request.Request.asset;
+                    request.Asset.lastUseTime = DateTime.Now;
+                    foreach (var callback in request.callbacks)
+                    {
+                        callback?.Invoke(request);
+                    }
+
+                    request.Asset.RefCount += request.callbacks.Count;
+                    _nameDictAsync.Add(request.AssetName, request);
+                    _waitOrLoad.Remove(request.AssetName);
+                }
+                else
+                {
+                    Debug.LogError("这不可能");
+                }
             }
         }
 
-        public void GetAssetAsync(string name, OnLoadAssetAsyncFinish finish, AsyncLoadPriority priority)
+        [CanBeNull]
+        public AsyncLoadRequest GetAssetAsync(string name, LoadComplete onComplete)
         {
-            var asset = GetAssetFromPools(name);
-            if (asset != null)
+            CheckInit();
+            var res = GetAsyncAssetFromPools(name);
+            if (res != null)
             {
-                finish?.Invoke(name, asset.asset);
+                onComplete?.Invoke(res);
+                res.Asset.RefCount++;
+                return res;
             }
 
-            if (_loading.ContainsKey(name))
+            if (!_waitOrLoad.TryGetValue(name, out var request))
             {
-                Debug.LogWarning($"资源{name}已经在加载了");
-                return;
+                var info = AssetBundleManager.Instance.GetAssetInfo(name);
+                if (info == null)
+                {
+                    return null;
+                }
+
+                var ab = AssetBundleManager.Instance.GetAssetBundle(info, true);
+                if (ab == null)
+                {
+                    return null;
+                }
+
+                request = new AsyncLoadRequest(new Asset(info)
+                {
+                    asset = null,
+                    lastUseTime = default,
+                    RefCount = 0
+                })
+                {
+                    Request = null,
+                    Bundle = ab
+                };
+
+                _waiting.Enqueue(request);
+                _waitOrLoad.Add(name, request);
+
+                if (_loadCoroutine == null)
+                {
+                    _loadCoroutine = _mono.StartCoroutine(Load());
+                }
             }
+
+            request.callbacks.Add(onComplete);
+            return request;
         }
 
-        private void CheckAsyncFeatureInit()
+        [CanBeNull]
+        private AsyncLoadRequest GetAsyncAssetFromPools(string name)
+        {
+            if (_nameDictAsync.TryGetValue(name, out var result))
+            {
+                return result;
+            }
+
+            foreach (var ass in _noRefAsync)
+            {
+                if (ass.Asset.assetInfo.assetName == name)
+                {
+                    result = ass;
+                }
+            }
+
+            return result;
+        }
+
+        private void CheckInit()
         {
             if (!_isInitAsync)
             {
@@ -295,7 +341,7 @@ namespace Breakdawn.Unity
 
             if (isCache)
             {
-                _noRefAssets.AddFirst(res);
+                _noRef.AddFirst(res);
             }
             else
             {
@@ -324,9 +370,30 @@ namespace Breakdawn.Unity
             return true;
         }
 
+        private Asset CacheAsset(string name)
+        {
+            var info = AssetBundleManager.Instance.GetAssetInfo(name);
+            if (info == null)
+            {
+                Debug.LogError($"不存在资源:name[{name}]");
+                return null;
+            }
+
+            var asset = new Asset(info);
+            _nameDict.Add(name, asset);
+            return asset;
+        }
+
         private static bool CheckParameter<T>(UnityObjectInfo<T> param) where T : Object
         {
             return param.obj == null && string.IsNullOrEmpty(param.rawName);
+        }
+
+        private static string GetRealNameFromAssetName(string assetName)
+        {
+            var start = assetName.LastIndexOf('/');
+            var end = assetName.LastIndexOf('.');
+            return assetName.Substring(start + 1, end - start - 1);
         }
     }
 }
