@@ -5,7 +5,7 @@ namespace Breakdawn.Test
 {
     public class AsyncTest : MonoBehaviour
     {
-        private AsyncLoadRequest _request;
+        private AsyncAssetRequest _request;
         private UnityObjectInfo<GameObject> _prefab;
         private GameObject _real;
 
@@ -13,10 +13,12 @@ namespace Breakdawn.Test
 
         private void Start()
         {
-            AssetBundleManager.Instance.Init("Assets/StreamingAssets");
+            AssetBundleManager.Instance.Init(Paths.AssetConfig, Paths.Assets, Paths.StreamingAssets);
             ResourceManager.Instance.Init(this);
-            _request = ResourceManager.Instance.GetAssetAsync("Assets/Prefabs/Attack.prefab",
-                request => request.GetAsset(ref _prefab));
+            _request = ResourceManager.Instance.GetAssetAsync(request => request.GetAsset(ref _prefab),
+                "Attack.prefab",
+                Paths.Assets,
+                Paths.Prefabs);
         }
 
         private void Update()

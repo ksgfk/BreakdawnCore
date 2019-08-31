@@ -13,9 +13,9 @@ namespace Breakdawn.Unity
     /// </summary>
     public class Asset
     {
-        public readonly AssetInfo assetInfo;
-        internal Object asset;
-        internal DateTime lastUseTime;
+        public AssetInfo Info { get; }
+        internal virtual Object Resource { get; set; }
+        internal DateTime LastUseTime { get; set; }
         private int _refCount;
 
         internal int RefCount
@@ -25,21 +25,26 @@ namespace Breakdawn.Unity
             {
                 if (value < 0)
                 {
-                    throw new InvalidOperationException($"引用计数不能小于0，name:{assetInfo.assetName}，refCount:{_refCount}");
+                    throw new InvalidOperationException($"引用计数不能小于0，name:{Info.assetName}，refCount:{_refCount}");
                 }
 
                 _refCount = value;
             }
         }
 
-        internal Asset(AssetInfo assetInfo)
+        internal Asset(AssetInfo info)
         {
-            this.assetInfo = assetInfo;
+            this.Info = info;
         }
     }
 
     public class ResourceManager : Singleton<ResourceManager>
     {
+        /// <summary>
+        /// 正在使用的资源
+        /// </summary>
+        private readonly Dictionary<string, Asset> _nameDict = new Dictionary<string, Asset>();
+
         private ResourceManager()
         {
         }
@@ -51,11 +56,6 @@ namespace Breakdawn.Unity
         /// </summary>
         private readonly FastLinkedList<Asset> _noRef = new FastLinkedList<Asset>();
 
-        /// <summary>
-        /// 正在使用的资源
-        /// </summary>
-        private readonly Dictionary<string, Asset> _nameDict = new Dictionary<string, Asset>();
-
         [CanBeNull]
         private Asset GetAssetFromPools(string name)
         {
@@ -66,7 +66,7 @@ namespace Breakdawn.Unity
 
             foreach (var ass in _noRef)
             {
-                if (ass.assetInfo.assetName == name)
+                if (ass.Info.assetName == name)
                 {
                     result = ass;
                 }
@@ -120,32 +120,27 @@ namespace Breakdawn.Unity
                 Debug.LogWarning($"Are you sure Reference count is {refCount}? :(");
             }
 
-            if (res.asset == null)
+            if (res.Resource == null)
             {
-                var ab = AssetBundleManager.Instance.GetAssetBundle(res.assetInfo, true);
+                var ab = AssetBundleManager.Instance.GetAssetBundle(res.Info, true);
                 if (ab == null)
                 {
                     return default;
                 }
 
-                res.asset = ab.LoadAsset(GetRealNameFromAssetName(res.assetInfo.assetName));
-                if (res.asset == null)
+                res.Resource = ab.LoadAsset(GetRealNameFromAssetName(res.Info.assetName));
+                if (res.Resource == null)
                 {
-                    Debug.LogError($"资源加载失败，name[{res.assetInfo.assetName}]");
+                    Debug.LogError($"资源加载失败，name[{res.Info.assetName}]");
                     return default;
                 }
             }
 
-            var obj = res.asset;
-            if (!(obj is T result))
-            {
-                Debug.LogError($"类型错误，T:{typeof(T).FullName}，应为{obj.GetType().FullName}");
-                return default;
-            }
+            var obj = res.Resource;
 
             res.RefCount += refCount;
-            res.lastUseTime = DateTime.Now;
-            return new UnityObjectInfo<T>(result, res.assetInfo.assetName);
+            res.LastUseTime = DateTime.Now;
+            return new UnityObjectInfo<T>(TypeCast<T>(obj), res.Info.assetName);
         }
 
         [CanBeNull]
@@ -167,19 +162,14 @@ namespace Breakdawn.Unity
 
         private MonoBehaviour _mono;
         private Coroutine _loadCoroutine;
-        private readonly Queue<AsyncLoadRequest> _waiting = new Queue<AsyncLoadRequest>();
+        private readonly Queue<AsyncAssetRequest> _waiting = new Queue<AsyncAssetRequest>();
 
-        private readonly Dictionary<string, AsyncLoadRequest> _waitOrLoad =
-            new Dictionary<string, AsyncLoadRequest>();
-
-        private readonly FastLinkedList<AsyncLoadRequest> _noRefAsync = new FastLinkedList<AsyncLoadRequest>();
-
-        private readonly Dictionary<string, AsyncLoadRequest> _nameDictAsync =
-            new Dictionary<string, AsyncLoadRequest>();
+        private readonly Dictionary<string, AsyncAssetRequest> _waitOrLoad =
+            new Dictionary<string, AsyncAssetRequest>();
 
         private bool _isInitAsync;
 
-        public delegate void LoadComplete(AsyncLoadRequest obj);
+        public delegate void LoadComplete(AsyncAssetRequest obj);
 
         public void Init(MonoBehaviour mono)
         {
@@ -198,44 +188,61 @@ namespace Breakdawn.Unity
                     break;
                 }
 
-                var request = _waiting.Dequeue();
+                var proc = _waiting.Dequeue();
 
-                if (request.Request == null)
+                if (proc.Request == null)
                 {
-                    request.Request =
-                        request.Bundle.LoadAssetAsync(GetRealNameFromAssetName(request.AssetName));
+                    proc.Request = proc.Bundle.LoadAssetAsync(GetRealNameFromAssetName(proc.AssetName));
                 }
 
-                yield return request.Request;
-                if (request.IsDone)
+                yield return proc.Request;
+                if (proc.IsDone)
                 {
-                    request.Asset.asset = request.Request.asset;
-                    request.Asset.lastUseTime = DateTime.Now;
-                    foreach (var callback in request.callbacks)
+                    proc.LastUseTime = DateTime.Now;
+                    foreach (var callback in proc.callbacks)
                     {
-                        callback?.Invoke(request);
+                        callback?.Invoke(proc);
                     }
 
-                    request.Asset.RefCount += request.callbacks.Count;
-                    _nameDictAsync.Add(request.AssetName, request);
-                    _waitOrLoad.Remove(request.AssetName);
+                    proc.RefCount += proc.callbacks.Count;
+                    _nameDict.Add(proc.AssetName, proc);
+                    _waitOrLoad.Remove(proc.AssetName);
                 }
                 else
                 {
-                    Debug.LogError("这不可能");
+                    throw new InvalidOperationException("不可能过了yield,资源却没加载完毕");
                 }
             }
         }
 
+        /// <summary>
+        /// 异步加载资源
+        /// </summary>
+        /// <param name="onComplete">加载完成后的行为</param>
+        /// <param name="fileName">资源全名</param>
+        /// <param name="paths">资源路径</param>
+        /// <returns>异步加载请求</returns>
         [CanBeNull]
-        public AsyncLoadRequest GetAssetAsync(string name, LoadComplete onComplete)
+        public AsyncAssetRequest GetAssetAsync(LoadComplete onComplete, string fileName, params string[] paths)
+        {
+            return GetAssetAsync(new PathBuilder(string.Empty, fileName, paths).Get(), onComplete);
+        }
+
+        /// <summary>
+        /// 异步加载资源
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="onComplete">加载完成后的行为</param>
+        /// <returns>异步加载请求</returns>
+        [CanBeNull]
+        public AsyncAssetRequest GetAssetAsync(string name, LoadComplete onComplete)
         {
             CheckInit();
             var res = GetAsyncAssetFromPools(name);
             if (res != null)
             {
                 onComplete?.Invoke(res);
-                res.Asset.RefCount++;
+                res.RefCount++;
                 return res;
             }
 
@@ -253,12 +260,7 @@ namespace Breakdawn.Unity
                     return null;
                 }
 
-                request = new AsyncLoadRequest(new Asset(info)
-                {
-                    asset = null,
-                    lastUseTime = default,
-                    RefCount = 0
-                })
+                request = new AsyncAssetRequest(info)
                 {
                     Request = null,
                     Bundle = ab
@@ -278,22 +280,27 @@ namespace Breakdawn.Unity
         }
 
         [CanBeNull]
-        private AsyncLoadRequest GetAsyncAssetFromPools(string name)
+        private AsyncAssetRequest GetAsyncAssetFromPools(string name)
         {
-            if (_nameDictAsync.TryGetValue(name, out var result))
+            if (_nameDict.TryGetValue(name, out var result))
             {
-                return result;
-            }
-
-            foreach (var ass in _noRefAsync)
-            {
-                if (ass.Asset.assetInfo.assetName == name)
+                if (result is AsyncAssetRequest request)
                 {
-                    result = ass;
+                    return request;
                 }
+
+                throw new InvalidCastException($"资源{name}不是通过异步请求加载的");
             }
 
-            return result;
+//            foreach (var ass in _noRefAsync)
+//            {
+//                if (ass.assetInfo.assetName == name)
+//                {
+//                    result = ass;
+//                }
+//            }
+
+            return null;
         }
 
         private void CheckInit()
@@ -314,9 +321,9 @@ namespace Breakdawn.Unity
                 return;
             }
 
-            if (!_nameDict.Remove(res.assetInfo.assetName))
+            if (!_nameDict.Remove(res.Info.assetName))
             {
-                Debug.LogError($"字典中不存在资源:{res.assetInfo.assetName}，可能多次释放该资源");
+                Debug.LogError($"字典中不存在资源:{res.Info.assetName}，可能多次释放该资源");
                 return;
             }
 
@@ -326,8 +333,8 @@ namespace Breakdawn.Unity
             }
             else
             {
-                AssetBundleManager.Instance.ReleaseAsset(res.assetInfo);
-                res.asset = null;
+                AssetBundleManager.Instance.ReleaseAsset(res.Info);
+                res.Resource = null;
             }
         }
 
@@ -381,6 +388,16 @@ namespace Breakdawn.Unity
             var start = assetName.LastIndexOf('/');
             var end = assetName.LastIndexOf('.');
             return assetName.Substring(start + 1, end - start - 1);
+        }
+
+        internal static T TypeCast<T>(Object obj) where T : Object
+        {
+            if (obj is T result)
+            {
+                return result;
+            }
+
+            throw new InvalidCastException($"类型错误，T:{typeof(T).FullName}，应为{obj.GetType().FullName}");
         }
     }
 }
