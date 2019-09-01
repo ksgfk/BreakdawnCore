@@ -5,7 +5,7 @@ namespace Breakdawn.Test
 {
     public class AsyncTest : MonoBehaviour
     {
-        private AsyncAssetRequest _request;
+        private LoadAssetAsyncRequest _request;
         private UnityObjectInfo<GameObject> _prefab;
         private UnityObjectInfo<GameObject> _test;
         private GameObject _real;
@@ -22,6 +22,13 @@ namespace Breakdawn.Test
                 "Attack.prefab",
                 Paths.Assets,
                 Paths.Prefabs);
+
+            ResourceManager.Instance.GetAssetAsync(request => request.GetAsset(ref _test),
+                "Attack.prefab",
+                Paths.Assets,
+                Paths.Prefabs);
+
+//            ResourceManager.Instance.CacheAssetAsync($"{Paths.Assets}/{Paths.Prefabs}/Attack.prefab");
         }
 
         private void Update()
@@ -41,13 +48,15 @@ namespace Breakdawn.Test
             _real = Instantiate(_prefab.obj);
             _init = true;
             _request = null;
+            var a = ResourceManager.Instance;
         }
 
         public void OnButtonClick()
         {
             Destroy(_real);
-            ResourceManager.Instance.RecycleAsset(ref _prefab, true);
+            ResourceManager.Instance.RecycleAsset(ref _prefab);
             var a = ResourceManager.Instance;
+//            var a = ResourceManager.Instance;
         }
 
         public void OnAnotherButtonClick()

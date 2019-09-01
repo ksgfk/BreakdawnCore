@@ -87,7 +87,9 @@ namespace Breakdawn.Unity
         {
             if (CheckParameter(result))
             {
-                result = GetAsset<T>(GetAsset(name), 1);
+                var asset = GetAsset(name);
+                result = GetAsset<T>(asset, 1);
+                _nameDict.Add(name, asset);
             }
             else
             {
@@ -121,21 +123,7 @@ namespace Breakdawn.Unity
 
             if (res.Resource == null)
             {
-                var ab = AssetBundleManager.Instance.GetAssetBundle(res.Info, true);
-                if (ab == null)
-                {
-                    return default;
-                }
-
-                res.Resource = res.IsSprite
-                    ? ab.LoadAsset<Sprite>(GetRealNameFromAssetName(res.Info.assetName))
-                    : ab.LoadAsset(GetRealNameFromAssetName(res.Info.assetName));
-
-                if (res.Resource == null)
-                {
-                    Debug.LogError($"资源加载失败，name[{res.Info.assetName}]");
-                    return default;
-                }
+                LoadAsset(res);
             }
 
             var obj = res.Resource;
@@ -143,6 +131,24 @@ namespace Breakdawn.Unity
             res.RefCount += refCount;
             res.LastUseTime = DateTime.Now;
             return new UnityObjectInfo<T>(Utility.TypeCast<Object, T>(obj), res.Info.assetName);
+        }
+
+        private static void LoadAsset(Asset res)
+        {
+            var ab = AssetBundleManager.Instance.GetAssetBundle(res.Info, true);
+            if (ab == null)
+            {
+                return;
+            }
+
+            res.Resource = res.IsSprite
+                ? ab.LoadAsset<Sprite>(GetRealNameFromAssetName(res.Info.assetName))
+                : ab.LoadAsset(GetRealNameFromAssetName(res.Info.assetName));
+
+            if (res.Resource == null)
+            {
+                Debug.LogError($"资源加载失败，name[{res.Info.assetName}]");
+            }
         }
 
         [CanBeNull]
@@ -154,8 +160,43 @@ namespace Breakdawn.Unity
                 return result;
             }
 
-            result = CacheAsset(name);
+            var info = AssetBundleManager.Instance.GetAssetInfo(name);
+            if (info == null)
+            {
+                Debug.LogError($"不存在资源:name[{name}]");
+                return null;
+            }
+
+            result = new Asset(info);
             return result;
+        }
+
+        /// <summary>
+        /// 缓存资源
+        /// </summary>
+        public void CacheAsset(string name)
+        {
+            var result = Cache(name);
+            if (result == null)
+            {
+                return;
+            }
+
+            if (_waitOrLoad.ContainsKey(name))
+            {
+                return;
+            }
+
+            LoadAsset(result);
+            _noRef.AddLast(result);
+        }
+
+        /// <summary>
+        /// 缓存资源
+        /// </summary>
+        public void CacheAsset(string fileName, params string[] paths)
+        {
+            CacheAsset(new PathBuilder(string.Empty, fileName, paths).Get());
         }
 
         #endregion
@@ -164,14 +205,14 @@ namespace Breakdawn.Unity
 
         private MonoBehaviour _mono;
         private Coroutine _loadCoroutine;
-        private readonly Queue<AsyncAssetRequest> _waiting = new Queue<AsyncAssetRequest>();
+        private readonly Queue<LoadAssetAsyncRequest> _waiting = new Queue<LoadAssetAsyncRequest>();
 
-        private readonly Dictionary<string, AsyncAssetRequest> _waitOrLoad =
-            new Dictionary<string, AsyncAssetRequest>();
+        private readonly Dictionary<string, LoadAssetAsyncRequest> _waitOrLoad =
+            new Dictionary<string, LoadAssetAsyncRequest>();
 
         private bool _isInitAsync;
 
-        public delegate void LoadComplete(AsyncAssetRequest obj);
+        public delegate void LoadComplete(LoadAssetAsyncRequest obj);
 
         public void InitAsync(MonoBehaviour mono)
         {
@@ -207,13 +248,17 @@ namespace Breakdawn.Unity
                         callback?.Invoke(proc);
                     }
 
-                    proc.RefCount += proc.callbacks.Count;
-                    _nameDict.Add(proc.AssetName, proc);
                     _waitOrLoad.Remove(proc.AssetName);
-                    proc.callbacks = null;
                     proc.resource = proc.Request.asset;
                     proc.isDone = proc.Request.isDone;
                     proc.Request = null;
+                    proc.callbacks = null;
+                    if (proc.isCached)
+                    {
+                        continue;
+                    }
+
+                    _nameDict.Add(proc.AssetName, proc);
                 }
                 else
                 {
@@ -231,7 +276,7 @@ namespace Breakdawn.Unity
         /// <param name="paths">资源路径</param>
         /// <returns>异步加载请求</returns>
         [CanBeNull]
-        public AsyncAssetRequest GetAssetAsync(LoadComplete onComplete, string fileName, params string[] paths)
+        public LoadAssetAsyncRequest GetAssetAsync(LoadComplete onComplete, string fileName, params string[] paths)
         {
             return GetAssetAsync(new PathBuilder(string.Empty, fileName, paths).Get(), onComplete);
         }
@@ -243,49 +288,90 @@ namespace Breakdawn.Unity
         /// <param name="onComplete">加载完成后的行为</param>
         /// <returns>异步加载请求</returns>
         [CanBeNull]
-        public AsyncAssetRequest GetAssetAsync(string name, LoadComplete onComplete)
+        public LoadAssetAsyncRequest GetAssetAsync(string name, LoadComplete onComplete)
         {
             CheckInit();
-            var res = GetAssetFromPools<AsyncAssetRequest>(name);
+            var res = GetAssetFromPools<LoadAssetAsyncRequest>(name);
             if (res != null)
             {
                 onComplete?.Invoke(res);
-                res.RefCount++;
-                _nameDict.Add(name, res);
+                //res.RefCount++;
+                if (!_nameDict.ContainsKey(name))
+                {
+                    _nameDict.Add(name, res);
+                }
+
                 return res;
             }
 
             if (!_waitOrLoad.TryGetValue(name, out var request))
             {
-                var info = AssetBundleManager.Instance.GetAssetInfo(name);
-                if (info == null)
-                {
-                    return null;
-                }
-
-                var ab = AssetBundleManager.Instance.GetAssetBundle(info, true);
-                if (ab == null)
-                {
-                    return null;
-                }
-
-                request = new AsyncAssetRequest(info)
-                {
-                    Request = null,
-                    Bundle = ab
-                };
-
-                _waiting.Enqueue(request);
-                _waitOrLoad.Add(name, request);
-
-                if (_loadCoroutine == null)
-                {
-                    _loadCoroutine = _mono.StartCoroutine(Load());
-                }
+                request = GetNewAsyncLoadRequest(name, false);
             }
 
             request.callbacks.Add(onComplete);
             return request;
+        }
+
+        private LoadAssetAsyncRequest GetNewAsyncLoadRequest(string name, bool isCache)
+        {
+            var info = AssetBundleManager.Instance.GetAssetInfo(name);
+            if (info == null)
+            {
+                return null;
+            }
+
+            var ab = AssetBundleManager.Instance.GetAssetBundle(info, true);
+            if (ab == null)
+            {
+                return null;
+            }
+
+            var req = new LoadAssetAsyncRequest(info)
+            {
+                Request = null,
+                Bundle = ab,
+                isCached = isCache
+            };
+
+            _waiting.Enqueue(req);
+            _waitOrLoad.Add(name, req);
+
+            if (_loadCoroutine == null)
+            {
+                _loadCoroutine = _mono.StartCoroutine(Load());
+            }
+
+            return req;
+        }
+
+        /// <summary>
+        /// 异步缓存资源
+        /// </summary>
+        /// <returns>异步请求</returns>
+        [CanBeNull]
+        public LoadAssetAsyncRequest CacheAssetAsync(string name)
+        {
+            var result = Cache(name);
+
+            if (result == null)
+            {
+                return null;
+            }
+
+            var req = GetNewAsyncLoadRequest(name, true);
+            req.callbacks.Add(request => _noRef.AddLast(request));
+            return req;
+        }
+
+        /// <summary>
+        /// 异步缓存资源
+        /// </summary>
+        /// <returns>异步请求</returns>
+        [CanBeNull]
+        public LoadAssetAsyncRequest CacheAssetAsync(string fileName, params string[] paths)
+        {
+            return CacheAssetAsync(new PathBuilder(string.Empty, fileName, paths).Get());
         }
 
         private void CheckInit()
@@ -349,18 +435,23 @@ namespace Breakdawn.Unity
         }
 
         [CanBeNull]
-        private Asset CacheAsset(string name)
+        private Asset Cache(string name)
         {
-            var info = AssetBundleManager.Instance.GetAssetInfo(name);
-            if (info == null)
+            CheckInit();
+            var result = GetAssetFromPools<Asset>(name);
+            if (result != null)
             {
-                Debug.LogError($"不存在资源:name[{name}]");
                 return null;
             }
 
-            var asset = new Asset(info);
-            _nameDict.Add(name, asset);
-            return asset;
+            var info = AssetBundleManager.Instance.GetAssetInfo(name);
+            if (info != null)
+            {
+                return new Asset(info);
+            }
+
+            Debug.LogError($"不存在资源:name[{name}]");
+            return null;
         }
 
         [CanBeNull]
@@ -390,6 +481,14 @@ namespace Breakdawn.Unity
             }
 
             return Utility.TypeCast<Asset, T>(result);
+        }
+
+        /// <summary>
+        /// 清空缓存
+        /// </summary>
+        public void ClearCache()
+        {
+            _noRef.Clear();
         }
 
         private static bool CheckParameter<T>(UnityObjectInfo<T> param) where T : Object

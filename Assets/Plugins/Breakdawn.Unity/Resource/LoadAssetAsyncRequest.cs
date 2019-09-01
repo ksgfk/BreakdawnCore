@@ -5,11 +5,12 @@ using Object = UnityEngine.Object;
 
 namespace Breakdawn.Unity
 {
-    public class AsyncAssetRequest : Asset
+    public class LoadAssetAsyncRequest : Asset
     {
-        internal Object resource;
-        internal bool isDone;
+        internal Object resource = null;
+        internal bool isDone = false;
         internal List<ResourceManager.LoadComplete> callbacks = new List<ResourceManager.LoadComplete>();
+        internal bool isCached;
 
         public bool IsDone
         {
@@ -54,7 +55,7 @@ namespace Breakdawn.Unity
             }
         }
 
-        public AsyncAssetRequest(AssetInfo info) : base(info)
+        public LoadAssetAsyncRequest(AssetInfo info) : base(info)
         {
         }
 
@@ -70,6 +71,7 @@ namespace Breakdawn.Unity
                 return;
             }
 
+            RefCount++;
             obj = new UnityObjectInfo<T>(Utility.TypeCast<Object, T>(Resource), Info.assetName);
         }
     }
