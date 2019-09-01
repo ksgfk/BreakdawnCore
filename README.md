@@ -7,16 +7,13 @@
 从[Releases](https://github.com/ksgfk/BreakdawnCore/releases)中下载最新版，拖入Unity工程即可
 
 ## Usage/使用
-[Breakdawn.Core]不依赖Unity，可以单独在一个C#工程中存在。
-[Breakdawn.Unity]依赖[Breakdawn.Core]和Unity。
+详细用法见wiki
 
-~~详细用法见wiki（并没有）~~
+## Maintainers/维护
+[@KSGFK](https://github.com/ksgfk)
 
 ## Contributing/贡献
-[@KSGFK](https://github.com/ksgfk)
+nil
 
 ## License/许可
 [MIT © KSGFK](https://github.com/ksgfk/BreakdawnCore/blob/master/LICENSE)
-
-[Breakdawn.Core]:https://github.com/ksgfk/BreakdawnCore/tree/new-type/Assets/Plugins/Breakdawn.Core
-[Breakdawn.Unity]:https://github.com/ksgfk/BreakdawnCore/tree/new-type/Assets/Plugins/Breakdawn.Unity
