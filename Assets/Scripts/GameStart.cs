@@ -17,7 +17,7 @@ namespace Breakdawn.Test
 
         private void Awake()
         {
-            ResourceManager.Init(Paths.AssetConfig, Paths.Assets, Paths.StreamingAssets);
+            ResourceManager.Instance.Init(Paths.AssetConfig, Paths.Assets, Paths.StreamingAssets);
         }
 
         private void Start()
@@ -26,7 +26,7 @@ namespace Breakdawn.Test
                 "Attack.prefab",
                 Paths.Assets,
                 Paths.Prefabs);
-            
+
             ResourceManager.Instance.GetAsset(ref _a,
                 "Attack.prefab",
                 Paths.Assets,

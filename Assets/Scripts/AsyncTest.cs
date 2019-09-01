@@ -12,19 +12,22 @@ namespace Breakdawn.Test
 
         private bool _init;
 
+        private UnityObjectInfo<Sprite> _sprite;
+
         private void Start()
         {
-            ResourceManager.Init(Paths.AssetConfig, Paths.Assets, Paths.StreamingAssets);
+            ResourceManager.Instance.Init(Paths.AssetConfig, Paths.Assets, Paths.StreamingAssets);
             ResourceManager.Instance.InitAsync(this);
             _request = ResourceManager.Instance.GetAssetAsync(request => request.GetAsset(ref _prefab),
                 "Attack.prefab",
                 Paths.Assets,
                 Paths.Prefabs);
 
-            ResourceManager.Instance.GetAssetAsync(request => request.GetAsset(ref _test),
-                "Attack.prefab",
+            ResourceManager.Instance.GetAssetAsync(request => request.GetAsset(ref _sprite),
+                "ModelBoomOceanSoulOre.png",
                 Paths.Assets,
-                Paths.Prefabs);
+                Paths.Models,
+                "benghuai");
         }
 
         private void Update()

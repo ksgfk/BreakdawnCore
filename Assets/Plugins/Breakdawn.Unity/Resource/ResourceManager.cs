@@ -17,6 +17,7 @@ namespace Breakdawn.Unity
         internal virtual Object Resource { get; set; }
         internal DateTime LastUseTime { get; set; }
         private int _refCount;
+        public bool IsSprite { get; }
 
         internal int RefCount
         {
@@ -35,6 +36,16 @@ namespace Breakdawn.Unity
         internal Asset(AssetInfo info)
         {
             Info = info;
+            if (info.assetName.EndsWith(".png") ||
+                info.assetName.EndsWith(".jpg") ||
+                info.assetName.EndsWith(".bmp"))
+            {
+                IsSprite = true;
+            }
+            else
+            {
+                IsSprite = false;
+            }
         }
     }
 
@@ -61,7 +72,7 @@ namespace Breakdawn.Unity
         /// </summary>
         /// <param name="fileName">配置文件完整名称</param>
         /// <param name="paths">配置文件路径</param>
-        public static void Init(string fileName, params string[] paths)
+        public void Init(string fileName, params string[] paths)
         {
             AssetBundleManager.Instance.Init(new PathBuilder(string.Empty, fileName, paths).Get());
         }
@@ -116,7 +127,10 @@ namespace Breakdawn.Unity
                     return default;
                 }
 
-                res.Resource = ab.LoadAsset(GetRealNameFromAssetName(res.Info.assetName));
+                res.Resource = res.IsSprite
+                    ? ab.LoadAsset<Sprite>(GetRealNameFromAssetName(res.Info.assetName))
+                    : ab.LoadAsset(GetRealNameFromAssetName(res.Info.assetName));
+
                 if (res.Resource == null)
                 {
                     Debug.LogError($"资源加载失败，name[{res.Info.assetName}]");
@@ -179,7 +193,9 @@ namespace Breakdawn.Unity
                 var proc = _waiting.Dequeue();
                 if (proc.Request == null)
                 {
-                    proc.Request = proc.Bundle.LoadAssetAsync(GetRealNameFromAssetName(proc.AssetName));
+                    proc.Request = proc.IsSprite
+                        ? proc.Bundle.LoadAssetAsync<Sprite>(GetRealNameFromAssetName(proc.AssetName))
+                        : proc.Bundle.LoadAssetAsync(GetRealNameFromAssetName(proc.AssetName));
                 }
 
                 yield return proc.Request;
@@ -266,30 +282,6 @@ namespace Breakdawn.Unity
 
             request.callbacks.Add(onComplete);
             return request;
-        }
-
-        [CanBeNull]
-        private AsyncAssetRequest GetAsyncAssetFromPools(string name)
-        {
-            if (_nameDict.TryGetValue(name, out var result))
-            {
-                if (result is AsyncAssetRequest request)
-                {
-                    return request;
-                }
-
-                throw new InvalidCastException($"资源{name}不是通过异步请求加载的");
-            }
-
-//            foreach (var ass in _noRefAsync)
-//            {
-//                if (ass.assetInfo.assetName == name)
-//                {
-//                    result = ass;
-//                }
-//            }
-
-            return null;
         }
 
         private void CheckInit()
