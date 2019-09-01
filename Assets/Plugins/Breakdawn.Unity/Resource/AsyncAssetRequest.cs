@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Breakdawn.Core;
 using UnityEngine;
@@ -8,18 +7,51 @@ namespace Breakdawn.Unity
 {
     public class AsyncAssetRequest : Asset
     {
+        internal Object resource;
+        internal bool isDone;
         internal List<ResourceManager.LoadComplete> callbacks = new List<ResourceManager.LoadComplete>();
 
-        public bool IsDone => Request?.isDone ?? false;
-        public float Progress => Request?.progress ?? 0;
+        public bool IsDone
+        {
+            get
+            {
+                if (isDone)
+                {
+                    return true;
+                }
+
+                return Request?.isDone ?? false;
+            }
+        }
+
+        public float Progress
+        {
+            get
+            {
+                if (resource != null)
+                {
+                    return 1;
+                }
+
+                return Request?.progress ?? 0;
+            }
+        }
+
         public string AssetName => Info.assetName;
         internal AssetBundleRequest Request { get; set; }
         internal AssetBundle Bundle { get; set; }
 
         internal override Object Resource
         {
-            get => Request.isDone ? Request.asset : null;
-            set => throw new InvalidOperationException($"异步加载不可以设置资源");
+            get
+            {
+                if (resource != null)
+                {
+                    return resource;
+                }
+
+                return Request.isDone ? Request.asset : null;
+            }
         }
 
         public AsyncAssetRequest(AssetInfo info) : base(info)

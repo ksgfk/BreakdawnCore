@@ -22,12 +22,6 @@ namespace Breakdawn.Test
                 "Attack.prefab",
                 Paths.Assets,
                 Paths.Prefabs);
-
-            ResourceManager.Instance.GetAssetAsync(request => request.GetAsset(ref _sprite),
-                "ModelBoomOceanSoulOre.png",
-                Paths.Assets,
-                Paths.Models,
-                "benghuai");
         }
 
         private void Update()
@@ -37,21 +31,22 @@ namespace Breakdawn.Test
                 return;
             }
 
-            if (_request.IsDone)
+            Debug.Log(_request.Progress);
+
+            if (!_request.IsDone)
             {
-                _real = Instantiate(_prefab.obj);
-                _init = true;
+                return;
             }
-            else
-            {
-                Debug.Log(_request.Progress);
-            }
+
+            _real = Instantiate(_prefab.obj);
+            _init = true;
+            _request = null;
         }
 
         public void OnButtonClick()
         {
             Destroy(_real);
-            ResourceManager.Instance.RecycleAsset(ref _prefab);
+            ResourceManager.Instance.RecycleAsset(ref _prefab, true);
             var a = ResourceManager.Instance;
         }
 
@@ -61,7 +56,8 @@ namespace Breakdawn.Test
                 "Attack.prefab",
                 Paths.Assets,
                 Paths.Prefabs);
-            _real = Instantiate(_prefab.obj);
+            _init = false;
+
             var a = ResourceManager.Instance;
         }
     }

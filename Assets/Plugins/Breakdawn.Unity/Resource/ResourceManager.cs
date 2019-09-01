@@ -199,7 +199,7 @@ namespace Breakdawn.Unity
                 }
 
                 yield return proc.Request;
-                if (proc.IsDone)
+                if (proc.Request.isDone)
                 {
                     proc.LastUseTime = DateTime.Now;
                     foreach (var callback in proc.callbacks)
@@ -211,6 +211,9 @@ namespace Breakdawn.Unity
                     _nameDict.Add(proc.AssetName, proc);
                     _waitOrLoad.Remove(proc.AssetName);
                     proc.callbacks = null;
+                    proc.resource = proc.Request.asset;
+                    proc.isDone = proc.Request.isDone;
+                    proc.Request = null;
                 }
                 else
                 {
@@ -248,6 +251,7 @@ namespace Breakdawn.Unity
             {
                 onComplete?.Invoke(res);
                 res.RefCount++;
+                _nameDict.Add(name, res);
                 return res;
             }
 
