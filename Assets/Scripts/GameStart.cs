@@ -17,7 +17,7 @@ namespace Breakdawn.Test
 
         private void Awake()
         {
-            AssetBundleManager.Instance.Init(Paths.AssetConfig, Paths.Assets, Paths.StreamingAssets);
+            ResourceManager.Init(Paths.AssetConfig, Paths.Assets, Paths.StreamingAssets);
         }
 
         private void Start()
@@ -39,15 +39,12 @@ namespace Breakdawn.Test
                 Paths.Sounds);
             source.clip = _testClip.obj;
             source.Play();
-
-            var a = AssetBundleManager.Instance;
         }
 
         public void OnButtonClick()
         {
             Destroy(_attack);
             ResourceManager.Instance.RecycleAsset(ref _attackPrefab);
-            var a = AssetBundleManager.Instance;
         }
 
         public void OnAnotherButtonClick()
@@ -64,7 +61,6 @@ namespace Breakdawn.Test
             source.Stop();
             source.clip = null;
             ResourceManager.Instance.RecycleAsset(ref _testClip);
-            var c = AssetBundleManager.Instance;
         }
     }
 }

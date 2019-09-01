@@ -20,7 +20,7 @@ namespace Breakdawn.Unity
         }
     }
 
-    public class AssetBundleManager : Singleton<AssetBundleManager>
+    internal class AssetBundleManager : Singleton<AssetBundleManager>
     {
         /// <summary>
         /// 资源配置表，key:资源名，value:资源信息
@@ -48,12 +48,7 @@ namespace Breakdawn.Unity
 
             _isInit = LoadConfig(path);
         }
-
-        public void Init(string fileName, params string[] paths)
-        {
-            Init(new PathBuilder(string.Empty, fileName, paths).Get());
-        }
-
+        
         private bool LoadConfig(string path)
         {
             var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
@@ -140,11 +135,13 @@ namespace Breakdawn.Unity
         /// 获取资源所在的AssetBundle
         /// </summary>
         /// <param name="name">该资源的完整名称，带后缀</param>
+        /// <param name="info">获取到的资源信息</param>
         /// <returns>AB引用</returns>
         [CanBeNull]
-        internal AssetBundle GetAssetDependAB(string name)
+        internal AssetBundle GetAssetAndAB(string name, out AssetInfo info)
         {
-            return GetAssetBundle(GetAssetInfo(name));
+            info = GetAssetInfo(name);
+            return GetAssetBundle(info);
         }
 
         [CanBeNull]

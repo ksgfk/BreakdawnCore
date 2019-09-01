@@ -7,15 +7,21 @@ namespace Breakdawn.Test
     {
         private AsyncAssetRequest _request;
         private UnityObjectInfo<GameObject> _prefab;
+        private UnityObjectInfo<GameObject> _test;
         private GameObject _real;
 
         private bool _init;
 
         private void Start()
         {
-            AssetBundleManager.Instance.Init(Paths.AssetConfig, Paths.Assets, Paths.StreamingAssets);
-            ResourceManager.Instance.Init(this);
+            ResourceManager.Init(Paths.AssetConfig, Paths.Assets, Paths.StreamingAssets);
+            ResourceManager.Instance.InitAsync(this);
             _request = ResourceManager.Instance.GetAssetAsync(request => request.GetAsset(ref _prefab),
+                "Attack.prefab",
+                Paths.Assets,
+                Paths.Prefabs);
+
+            ResourceManager.Instance.GetAssetAsync(request => request.GetAsset(ref _test),
                 "Attack.prefab",
                 Paths.Assets,
                 Paths.Prefabs);
@@ -30,8 +36,6 @@ namespace Breakdawn.Test
 
             if (_request.IsDone)
             {
-                var a = AssetBundleManager.Instance;
-                var b = ResourceManager.Instance;
                 _real = Instantiate(_prefab.obj);
                 _init = true;
             }
@@ -39,6 +43,23 @@ namespace Breakdawn.Test
             {
                 Debug.Log(_request.Progress);
             }
+        }
+
+        public void OnButtonClick()
+        {
+            Destroy(_real);
+            ResourceManager.Instance.RecycleAsset(ref _prefab);
+            var a = ResourceManager.Instance;
+        }
+
+        public void OnAnotherButtonClick()
+        {
+            _request = ResourceManager.Instance.GetAssetAsync(request => request.GetAsset(ref _prefab),
+                "Attack.prefab",
+                Paths.Assets,
+                Paths.Prefabs);
+            _real = Instantiate(_prefab.obj);
+            var a = ResourceManager.Instance;
         }
     }
 }
