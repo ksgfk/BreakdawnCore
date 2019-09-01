@@ -7,7 +7,7 @@
 从[Releases](https://github.com/ksgfk/BreakdawnCore/releases)中下载最新版，拖入Unity工程即可
 
 ## Usage/使用
-详细用法见wiki
+详细用法见[wiki](https://github.com/ksgfk/BreakdawnCore/wiki)
 
 ## Maintainers/维护
 [@KSGFK](https://github.com/ksgfk)
