@@ -1,4 +1,3 @@
-using System;
 using Object = UnityEngine.Object;
 
 namespace Breakdawn.Unity

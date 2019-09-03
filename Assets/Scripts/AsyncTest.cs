@@ -29,7 +29,7 @@ namespace Breakdawn.Test
 //                Paths.Prefabs);
 
 //            ResourceManager.Instance.CacheAssetAsync($"{Paths.Assets}/{Paths.Prefabs}/Attack.prefab");
-            ObjectManager.Instance.Init(gameObject, gameObject);
+            ObjectManager.Instance.Init(gameObject);
             ObjectManager.Instance.InitPool($"{Paths.Assets}/{Paths.Prefabs}/Attack.prefab", 10);
         }
 

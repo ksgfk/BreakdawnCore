@@ -12,20 +12,18 @@ namespace Breakdawn.Unity
     public class ObjectManager : Singleton<ObjectManager>
     {
         private GameObject _recycle;
-        private GameObject _show;
         private bool _isInit;
 
-        private Dictionary<string, ObjectPool<UnityObjectInfo<GameObject>>> _pools =
+        private readonly Dictionary<string, ObjectPool<UnityObjectInfo<GameObject>>> _pools =
             new Dictionary<string, ObjectPool<UnityObjectInfo<GameObject>>>();
 
         private ObjectManager()
         {
         }
 
-        public void Init(GameObject recycle, GameObject show)
+        public void Init(GameObject pool)
         {
-            _recycle = recycle;
-            _show = show;
+            _recycle = pool;
             _isInit = true;
         }
 
@@ -99,11 +97,7 @@ namespace Breakdawn.Unity
                     HideObject(info);
                     return info;
                 }), initCount);
-            pool.OnGetObject += info =>
-            {
-                info.obj.Show();
-                info.obj.transform.parent = _show.transform;
-            };
+            pool.OnGetObject += info => info.obj.Show();
             pool.OnRecycling += HideObject;
             pool.OnRelease += info => Object.Destroy(info.obj);
             return pool;
