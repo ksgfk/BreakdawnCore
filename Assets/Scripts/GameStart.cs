@@ -8,12 +8,8 @@ namespace Breakdawn.Test
 {
     public class GameStart : MonoBehaviour
     {
-        private UnityObjectInfo<GameObject> _attackPrefab;
-        private UnityObjectInfo<GameObject> _a;
+        private GameObject _attackPrefab;
         private GameObject _attack;
-
-        private UnityObjectInfo<AudioClip> _testClip;
-        public AudioSource source;
 
         private void Awake()
         {
@@ -22,45 +18,24 @@ namespace Breakdawn.Test
 
         private void Start()
         {
-            ResourceManager.Instance.GetAsset(ref _attackPrefab,
-                "Attack.prefab",
-                Paths.Assets,
-                Paths.Prefabs);
-
-//            ResourceManager.Instance.GetAsset(ref _a,
-//                "Attack.prefab",
-//                Paths.Assets,
-//                Paths.Prefabs);
-
-            _attack = Instantiate(_attackPrefab.obj);
-            ResourceManager.Instance.GetAsset(ref _testClip,
-                "senlin.mp3",
-                Paths.Assets,
-                Paths.Sounds);
-            source.clip = _testClip.obj;
-            source.Play();
+            _attackPrefab =
+                ResourceManager.Instance.GetAsset<GameObject>($"{Paths.Assets}/{Paths.Prefabs}/Attack.prefab");
+            _attack = Instantiate(_attackPrefab);
         }
 
         public void OnButtonClick()
         {
             Destroy(_attack);
-            ResourceManager.Instance.RecycleAsset(ref _attackPrefab);
+            ResourceManager.Instance.RecycleAsset(_attackPrefab);
+            _attackPrefab = null;
+            _attack = null;
         }
 
         public void OnAnotherButtonClick()
         {
-//            ResourceManager.Instance.GetAsset(ref _attackPrefab,
-//                "Attack.prefab",
-//                Paths.Assets,
-//                Paths.Prefabs);
-//            _attack = Instantiate(_attackPrefab.obj);
-//
-//            var a = AssetBundleManager.Instance;
-//            var b = ResourceManager.Instance;
-
-            source.Stop();
-            source.clip = null;
-            ResourceManager.Instance.RecycleAsset(ref _testClip);
+            _attackPrefab =
+                ResourceManager.Instance.GetAsset<GameObject>($"{Paths.Assets}/{Paths.Prefabs}/Attack.prefab");
+            _attack = Instantiate(_attackPrefab);
         }
     }
 }

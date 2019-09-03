@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Breakdawn.Core;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -43,7 +44,7 @@ namespace Breakdawn.Unity
             {
                 if (value < 0)
                 {
-                    throw new InvalidOperationException($"引用计数不能小于0，name:{Info.assetName}，refCount:{_refCount}");
+                    throw new InvalidOperationException($"引用计数不能小于0，name:{Info.assetName}，refCount:{value}");
                 }
 
                 _refCount = value;
@@ -88,7 +89,14 @@ namespace Breakdawn.Unity
         /// </summary>
         private readonly FastLinkedList<Asset> _noRef = new FastLinkedList<Asset>();
 
+        /// <summary>
+        /// 正在使用的资源
+        /// </summary>
         private readonly Dictionary<AssetInfo, Asset> _assetDict = new Dictionary<AssetInfo, Asset>();
+
+        /// <summary>
+        /// 资源查询
+        /// </summary>
         private readonly Dictionary<Object, Asset> _objInquiryDict = new Dictionary<Object, Asset>();
 
         private ResourceManager()
@@ -107,173 +115,56 @@ namespace Breakdawn.Unity
             AssetBundleManager.Instance.Init(new PathBuilder(string.Empty, fileName, paths).Get());
         }
 
-        /// <summary>
-        /// 同步加载资源
-        /// </summary>
-        /// <param name="name">资源完整路径</param>
-        /// <param name="result">返回的资源本体</param>
-        /// <typeparam name="T">资源类型</typeparam>
-        [Obsolete]
-        public void GetAsset<T>(string name, ref UnityObjectInfo<T> result) where T : Object
-        {
-            if (CheckParameter(result))
-            {
-                var asset = GetAsset(name);
-                result = GetAsset<T>(asset, 1);
-                _nameDict.Add(name, asset);
-            }
-            else
-            {
-                throw new ArgumentException($"参数{nameof(result)}已经有值了，不可以重复赋值");
-            }
-        }
-
-        /// <summary>
-        /// 同步加载资源
-        /// </summary>
-        /// <param name="result">返回的资源本体</param>
-        /// <param name="fileName">资源全名</param>
-        /// <param name="paths">资源路径</param>
-        /// <typeparam name="T">资源类型</typeparam>
-        [Obsolete]
-        public void GetAsset<T>(ref UnityObjectInfo<T> result, string fileName, params string[] paths) where T : Object
-        {
-            GetAsset(new PathBuilder(string.Empty, fileName, paths).Get(), ref result);
-        }
-
         public T GetAsset<T>(string name) where T : Object
         {
             var info = AssetBundleManager.Instance.GetAssetInfo(name);
-            var asset = GetAssetFromCache<T>(info);
-            if (asset != null)
-            {
-                return asset.Resource as T;
-            }
-
-            asset = new Asset(info);
+            var asset = GetAssetFromCache(info) ?? new Asset(info);
+            asset.RefCount++;
             _assetDict.Add(info, asset);
             return asset.Resource as T;
         }
 
         [CanBeNull]
-        private Asset GetAssetFromCache<T>(AssetInfo info)
+        private Asset GetAssetFromCache(AssetInfo info)
         {
-            return _assetDict.TryGetValue(info, out var asset) ? asset : null;
+            if (_assetDict.TryGetValue(info, out var asset))
+            {
+                return asset;
+            }
+
+            foreach (var ass in _noRef)
+            {
+                if (!ass.Info.Equals(info))
+                {
+                    continue;
+                }
+
+                asset = ass;
+                break;
+            }
+
+            if (asset != null)
+            {
+                _noRef.Remove(asset);
+            }
+
+            return asset;
         }
 
-        private static Object LoadObject(AssetInfo info, bool isSprite)
+        internal Object LoadObject(Asset asset, bool isSprite)
         {
+            var info = asset.Info;
             var ab = AssetBundleManager.Instance.GetAssetBundle(info, true);
-            var result = isSprite
+            var resource = isSprite
                 ? ab.LoadAsset<Sprite>(GetRealNameFromAssetName(info.assetName))
                 : ab.LoadAsset(GetRealNameFromAssetName(info.assetName));
-            if (result == null)
+            if (resource == null)
             {
                 throw new ArgumentException($"无法加载{info}");
             }
 
-            return result;
-        }
-
-        [CanBeNull]
-        internal Object LoadObject(Asset asset, bool isSprite)
-        {
-            var resource = LoadObject(asset.Info, isSprite);
             _objInquiryDict.Add(resource, asset);
             return resource;
-        }
-
-        [Obsolete]
-        private static UnityObjectInfo<T> GetAsset<T>(Asset res, int refCount) where T : Object
-        {
-            if (res == null)
-            {
-                return default;
-            }
-
-            if (refCount < 1)
-            {
-                throw new ArgumentException($"你确定引用数量为{refCount}? :(");
-            }
-
-            if (res.Resource == null)
-            {
-                LoadAsset(res);
-            }
-
-            var obj = res.Resource;
-
-            res.RefCount += refCount;
-            res.LastUseTime = DateTime.Now;
-            return new UnityObjectInfo<T>(Utility.TypeCast<Object, T>(obj), res.Info.assetName);
-        }
-
-        [Obsolete]
-        internal static void LoadAsset(Asset res)
-        {
-//            var ab = AssetBundleManager.Instance.GetAssetBundle(res.Info, true);
-//            if (ab == null)
-//            {
-//                return;
-//            }
-//
-//            res.Resource = res.IsSprite
-//                ? ab.LoadAsset<Sprite>(GetRealNameFromAssetName(res.Info.assetName))
-//                : ab.LoadAsset(GetRealNameFromAssetName(res.Info.assetName));
-//
-//            if (res.Resource == null)
-//            {
-//                Debug.LogError($"资源加载失败，name[{res.Info.assetName}]");
-//            }
-            throw new NotImplementedException();
-        }
-
-        [CanBeNull]
-        private Asset GetAsset(string name)
-        {
-            var result = GetAssetFromPools<Asset>(name);
-            if (result != null)
-            {
-                return result;
-            }
-
-            var info = AssetBundleManager.Instance.GetAssetInfo(name);
-            if (info == null)
-            {
-                Debug.LogError($"不存在资源:name[{name}]");
-                return null;
-            }
-
-            result = new Asset(info);
-            return result;
-        }
-
-        /// <summary>
-        /// 缓存资源
-        /// </summary>
-        public void CacheAsset(string name)
-        {
-            var result = Cache(name);
-            if (result == null)
-            {
-                return;
-            }
-
-            if (_waitOrLoad.ContainsKey(name))
-            {
-                return;
-            }
-
-            LoadAsset(result);
-            _noRef.AddLast(result);
-        }
-
-        /// <summary>
-        /// 缓存资源
-        /// </summary>
-        public void CacheAsset(string fileName, params string[] paths)
-        {
-            CacheAsset(new PathBuilder(string.Empty, fileName, paths).Get());
         }
 
         #endregion
@@ -461,6 +352,16 @@ namespace Breakdawn.Unity
 
         #endregion
 
+        public void RecycleAsset(Object obj, bool isCache = true)
+        {
+            if (!_objInquiryDict.TryGetValue(obj, out var asset))
+            {
+                throw new ArgumentException($"该资源未初始化{obj}");
+            }
+
+            RecycleAsset(asset, isCache);
+        }
+
         private void RecycleAsset(Asset res, bool isCache)
         {
             res.RefCount--;
@@ -469,10 +370,9 @@ namespace Breakdawn.Unity
                 return;
             }
 
-            if (!_nameDict.Remove(res.Info.assetName))
+            if (!_assetDict.Remove(res.Info))
             {
-                Debug.LogError($"字典中不存在资源:{res.Info.assetName}，可能多次释放该资源");
-                return;
+                throw new ArgumentException($"资源池中无该资源{res}");
             }
 
             if (isCache)
@@ -482,33 +382,10 @@ namespace Breakdawn.Unity
             else
             {
                 AssetBundleManager.Instance.ReleaseAsset(res.Info);
-                res.resource = null;
-            }
-        }
-
-        /// <summary>
-        /// 释放资源
-        /// </summary>
-        /// <param name="obj">Unity资源，如果成功释放，则会将引用的值置空</param>
-        /// <param name="isCache">是否缓存，以便下次使用</param>
-        /// <typeparam name="T">资源类型</typeparam>
-        /// <exception cref="ArgumentException">资源不存在时抛出</exception>
-        public bool RecycleAsset<T>(ref UnityObjectInfo<T> obj, bool isCache = true) where T : Object
-        {
-            if (CheckParameter(obj))
-            {
-                return false;
             }
 
-            if (!_nameDict.TryGetValue(obj.rawName, out var ass))
-            {
-                Debug.LogError($"无法找到资源{obj.rawName}，这可能是Bug！");
-                return false;
-            }
-
-            RecycleAsset(ass, isCache);
-            obj = default;
-            return true;
+            _objInquiryDict.Remove(res.resource);
+            res.resource = null;
         }
 
         [CanBeNull]

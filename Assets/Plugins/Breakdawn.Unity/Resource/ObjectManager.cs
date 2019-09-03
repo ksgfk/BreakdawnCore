@@ -56,7 +56,7 @@ namespace Breakdawn.Unity
         private static UnityObjectInfo<GameObject> GetObjInfo(string name)
         {
             UnityObjectInfo<GameObject> objInfo = default;
-            ResourceManager.Instance.GetAsset(name, ref objInfo);
+//            ResourceManager.Instance.GetAsset(name, ref objInfo);//TODO:WIP
             if (!objInfo.IsValid())
             {
                 throw new ArgumentException($"无法找到资源{name}");
