@@ -1,4 +1,5 @@
-using UnityEngine;
+using System;
+using Object = UnityEngine.Object;
 
 namespace Breakdawn.Unity
 {
@@ -18,6 +19,11 @@ namespace Breakdawn.Unity
         {
             this.obj = obj;
             this.rawName = rawName;
+        }
+
+        public bool IsValid()
+        {
+            return obj != null && !string.IsNullOrEmpty(rawName);
         }
     }
 }

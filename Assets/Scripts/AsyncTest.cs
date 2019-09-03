@@ -18,38 +18,40 @@ namespace Breakdawn.Test
         {
             ResourceManager.Instance.Init(Paths.AssetConfig, Paths.Assets, Paths.StreamingAssets);
             ResourceManager.Instance.InitAsync(this);
-            _request = ResourceManager.Instance.GetAssetAsync(request => request.GetAsset(ref _prefab),
-                "Attack.prefab",
-                Paths.Assets,
-                Paths.Prefabs);
+//            _request = ResourceManager.Instance.GetAssetAsync(request => request.GetAsset(ref _prefab),
+//                "Attack.prefab",
+//                Paths.Assets,
+//                Paths.Prefabs);
 
-            ResourceManager.Instance.GetAssetAsync(request => request.GetAsset(ref _test),
-                "Attack.prefab",
-                Paths.Assets,
-                Paths.Prefabs);
+//            ResourceManager.Instance.GetAssetAsync(request => request.GetAsset(ref _test),
+//                "Attack.prefab",
+//                Paths.Assets,
+//                Paths.Prefabs);
 
 //            ResourceManager.Instance.CacheAssetAsync($"{Paths.Assets}/{Paths.Prefabs}/Attack.prefab");
+            ObjectManager.Instance.Init(gameObject, gameObject);
+            ObjectManager.Instance.InitPool($"{Paths.Assets}/{Paths.Prefabs}/Attack.prefab", 10);
         }
 
-        private void Update()
-        {
-            if (_init)
-            {
-                return;
-            }
-
-            Debug.Log(_request.Progress);
-
-            if (!_request.IsDone)
-            {
-                return;
-            }
-
-            _real = Instantiate(_prefab.obj);
-            _init = true;
-            _request = null;
-            var a = ResourceManager.Instance;
-        }
+//        private void Update()
+//        {
+//            if (_init)
+//            {
+//                return;
+//            }
+//
+//            Debug.Log(_request.Progress);
+//
+//            if (!_request.IsDone)
+//            {
+//                return;
+//            }
+//
+//            _real = Instantiate(_prefab.obj);
+//            _init = true;
+//            _request = null;
+//            var a = ResourceManager.Instance;
+//        }
 
         public void OnButtonClick()
         {

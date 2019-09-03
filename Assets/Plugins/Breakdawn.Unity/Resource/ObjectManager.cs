@@ -1,78 +1,118 @@
 using System;
 using System.Collections.Generic;
 using Breakdawn.Core;
-using JetBrains.Annotations;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Breakdawn.Unity
 {
+    /// <summary>
+    /// TODO:WIP
+    /// </summary>
     public class ObjectManager : Singleton<ObjectManager>
     {
-        private readonly Dictionary<Type, object> _poolDict = new Dictionary<Type, object>();
+        private GameObject _recycle;
+        private GameObject _show;
+        private bool _isInit;
+
+        private Dictionary<string, ObjectPool<UnityObjectInfo<GameObject>>> _pools =
+            new Dictionary<string, ObjectPool<UnityObjectInfo<GameObject>>>();
 
         private ObjectManager()
         {
         }
 
-        [CanBeNull]
-        public ObjectPool<T> GetPool<T>() where T : class
+        public void Init(GameObject recycle, GameObject show)
         {
-            return !_poolDict.TryGetValue(typeof(T), out var pool) ? null : pool as ObjectPool<T>;
+            _recycle = recycle;
+            _show = show;
+            _isInit = true;
         }
 
-        [CanBeNull]
-        public ObjectPool<T> AddPool<T>(IFactory<T> factory, int initCount = 0) where T : class
+        #region 同步加载的对象池
+
+        public UnityObjectInfo<GameObject> GetObject(string name)
         {
-            var type = typeof(T);
-            if (_poolDict.ContainsKey(type))
+            CheckInit();
+            if (TryGetObjectFromPool(name, out var obj))
             {
-                return null;
+                return obj;
             }
 
-            var newPool = new ObjectPool<T>(factory, initCount);
-            _poolDict.Add(type, newPool);
-            return newPool;
+            var pool = GetNewPool(GetObjInfo(name), 1);
+            _pools.Add(name, pool);
+            return pool.Get();
         }
 
-        public bool RemovePool<T>() where T : class
+        public void InitPool(string name, int initCount)
         {
-            var type = typeof(T);
-            if (!_poolDict.ContainsKey(type))
+            CheckInit();
+            if (_pools.ContainsKey(name))
             {
+                return;
+            }
+
+            _pools.Add(name, GetNewPool(GetObjInfo(name), initCount));
+        }
+
+        private static UnityObjectInfo<GameObject> GetObjInfo(string name)
+        {
+            UnityObjectInfo<GameObject> objInfo = default;
+            ResourceManager.Instance.GetAsset(name, ref objInfo);
+            if (!objInfo.IsValid())
+            {
+                throw new ArgumentException($"无法找到资源{name}");
+            }
+
+            return objInfo;
+        }
+
+        #endregion
+
+        private void CheckInit()
+        {
+            if (!_isInit)
+            {
+                throw new InvalidOperationException($"对象池管理未初始化");
+            }
+        }
+
+        private bool TryGetObjectFromPool(string name, out UnityObjectInfo<GameObject> obj)
+        {
+            if (!_pools.TryGetValue(name, out var pool))
+            {
+                obj = default;
                 return false;
             }
 
-            _poolDict.Remove(type);
+            obj = pool.Get();
             return true;
         }
 
-        [CanBeNull]
-        public T GetObject<T>() where T : class
+        private ObjectPool<UnityObjectInfo<GameObject>> GetNewPool(UnityObjectInfo<GameObject> objInfo, int initCount)
         {
-            return GetPool<T>()?.Get();
-        }
-
-        public bool RecycleObject<T>(T @object) where T : class
-        {
-            var result = GetPool<T>()?.Recycle(@object);
-            return result.HasValue && result.Value;
-        }
-
-        public void ReleasePools()
-        {
-            foreach (var pool in _poolDict.Values)
+            var pool = new ObjectPool<UnityObjectInfo<GameObject>>(
+                new ObjectFactory<UnityObjectInfo<GameObject>>(() =>
+                {
+                    var instance = Object.Instantiate(objInfo.obj);
+                    var info = new UnityObjectInfo<GameObject>(instance, objInfo.rawName);
+                    HideObject(info);
+                    return info;
+                }), initCount);
+            pool.OnGetObject += info =>
             {
-                var type = pool.GetType();
-                var method = type.GetMethod("Release");
-                if (method != null)
-                {
-                    method.Invoke(pool, null);
-                }
-                else
-                {
-                    Debug.LogWarning($"调用方法失败:{type.FullName}");
-                }
-            }
+                info.obj.Show();
+                info.obj.transform.parent = _show.transform;
+            };
+            pool.OnRecycling += HideObject;
+            pool.OnRelease += info => Object.Destroy(info.obj);
+            return pool;
+        }
+
+        private void HideObject(UnityObjectInfo<GameObject> info)
+        {
+            info.obj.Hide();
+            info.obj.transform.parent = _recycle.transform;
         }
     }
 }

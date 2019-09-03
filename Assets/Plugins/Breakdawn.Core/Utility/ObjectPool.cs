@@ -10,11 +10,6 @@ namespace Breakdawn.Core
         private readonly int _initCount;
 
         /// <summary>
-        /// 初始化对象池时触发，每创建一个对象触发一次
-        /// </summary>
-        public event Action<T> OnInit;
-
-        /// <summary>
         /// 从池中获取对象时触发事件
         /// </summary>
         public event Action<T> OnGetObject;
@@ -45,12 +40,15 @@ namespace Breakdawn.Core
             Init();
         }
 
+        public ObjectPool(Func<T> func, int initCount = 0) : this(new ObjectFactory<T>(func), initCount)
+        {
+        }
+
         private void Init()
         {
             for (var i = 0; i < _initCount; i++)
             {
                 var instance = GetObjectFromFactory();
-                OnInit?.Invoke(instance);
                 _pool.Push(instance);
             }
         }
