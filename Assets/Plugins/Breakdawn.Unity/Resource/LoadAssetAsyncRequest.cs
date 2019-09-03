@@ -7,7 +7,6 @@ namespace Breakdawn.Unity
 {
     public class LoadAssetAsyncRequest : Asset
     {
-        internal Object resource = null;
         internal bool isDone = false;
         internal List<ResourceManager.LoadComplete> callbacks = new List<ResourceManager.LoadComplete>();
         internal bool isCached;

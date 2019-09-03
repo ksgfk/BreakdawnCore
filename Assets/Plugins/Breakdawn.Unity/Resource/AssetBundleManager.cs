@@ -18,12 +18,12 @@ namespace Breakdawn.Unity
             get => _refCount;
             set
             {
-                if (_refCount + value < 0)
+                if (value < 0)
                 {
                     throw new InvalidOperationException("引用计数不可为负数");
                 }
 
-                _refCount += _refCount;
+                _refCount = value;
             }
         }
 
@@ -132,7 +132,6 @@ namespace Breakdawn.Unity
         /// </summary>
         /// <param name="name">包名</param>
         /// <param name="isRefAsset">是否有资源引用该包</param>
-        [CanBeNull]
         private AssetBundle GetAssetBundle(string name, bool isRefAsset)
         {
             CheckInit();
@@ -164,7 +163,6 @@ namespace Breakdawn.Unity
         /// </summary>
         /// <param name="assetInfo">包名</param>
         /// <param name="isRefAsset">是否有资源引用该包</param>
-        [CanBeNull]
         internal AssetBundle GetAssetBundle(AssetInfo assetInfo, bool isRefAsset = false)
         {
             var abRef = GetAssetBundle(assetInfo.abName, isRefAsset);
@@ -190,11 +188,10 @@ namespace Breakdawn.Unity
         /// </summary>
         /// <param name="name">该资源的完整名称，带后缀</param>
         /// <returns>AB信息</returns>
-        [CanBeNull]
         internal AssetInfo GetAssetInfo(string name)
         {
             CheckInit();
-            return _nameDict.TryGetValue(name, out var info) ? info : null;
+            return _nameDict.TryGetValue(name, out var info) ? info : throw new ArgumentException($"无法获取资源信息:{name}");
         }
 
         private void ProcessDepend(IEnumerable<string> depends)

@@ -13,10 +13,27 @@ namespace Breakdawn.Unity
     /// </summary>
     public class Asset
     {
-        public AssetInfo Info { get; }
-        internal virtual Object Resource { get; set; }
-        internal DateTime LastUseTime { get; set; }
+        internal Object resource;
         private int _refCount;
+
+        public AssetInfo Info { get; }
+
+        internal virtual Object Resource
+        {
+            get
+            {
+                if (resource != null)
+                {
+                    return resource;
+                }
+
+                resource = ResourceManager.Instance.LoadObject(this, IsSprite);
+                return resource;
+            }
+        }
+
+        internal DateTime LastUseTime { get; set; }
+
         public bool IsSprite { get; }
 
         internal int RefCount
@@ -47,6 +64,16 @@ namespace Breakdawn.Unity
                 IsSprite = false;
             }
         }
+
+        public override bool Equals(object obj)
+        {
+            return obj is Asset asset && Info.Equals(asset.Info);
+        }
+
+        public override int GetHashCode()
+        {
+            return Info.GetHashCode();
+        }
     }
 
     public class ResourceManager : Singleton<ResourceManager>
@@ -54,12 +81,15 @@ namespace Breakdawn.Unity
         /// <summary>
         /// 正在使用的资源
         /// </summary>
-        private readonly Dictionary<string, Asset> _nameDict = new Dictionary<string, Asset>();
+        [Obsolete] private readonly Dictionary<string, Asset> _nameDict = new Dictionary<string, Asset>();
 
         /// <summary>
         /// 缓存没有被引用的资源
         /// </summary>
         private readonly FastLinkedList<Asset> _noRef = new FastLinkedList<Asset>();
+
+        private readonly Dictionary<AssetInfo, Asset> _assetDict = new Dictionary<AssetInfo, Asset>();
+        private readonly Dictionary<Object, Asset> _objInquiryDict = new Dictionary<Object, Asset>();
 
         private ResourceManager()
         {
@@ -83,6 +113,7 @@ namespace Breakdawn.Unity
         /// <param name="name">资源完整路径</param>
         /// <param name="result">返回的资源本体</param>
         /// <typeparam name="T">资源类型</typeparam>
+        [Obsolete]
         public void GetAsset<T>(string name, ref UnityObjectInfo<T> result) where T : Object
         {
             if (CheckParameter(result))
@@ -104,11 +135,55 @@ namespace Breakdawn.Unity
         /// <param name="fileName">资源全名</param>
         /// <param name="paths">资源路径</param>
         /// <typeparam name="T">资源类型</typeparam>
+        [Obsolete]
         public void GetAsset<T>(ref UnityObjectInfo<T> result, string fileName, params string[] paths) where T : Object
         {
             GetAsset(new PathBuilder(string.Empty, fileName, paths).Get(), ref result);
         }
 
+        public T GetAsset<T>(string name) where T : Object
+        {
+            var info = AssetBundleManager.Instance.GetAssetInfo(name);
+            var asset = GetAssetFromCache<T>(info);
+            if (asset != null)
+            {
+                return asset.Resource as T;
+            }
+
+            asset = new Asset(info);
+            _assetDict.Add(info, asset);
+            return asset.Resource as T;
+        }
+
+        [CanBeNull]
+        private Asset GetAssetFromCache<T>(AssetInfo info)
+        {
+            return _assetDict.TryGetValue(info, out var asset) ? asset : null;
+        }
+
+        private static Object LoadObject(AssetInfo info, bool isSprite)
+        {
+            var ab = AssetBundleManager.Instance.GetAssetBundle(info, true);
+            var result = isSprite
+                ? ab.LoadAsset<Sprite>(GetRealNameFromAssetName(info.assetName))
+                : ab.LoadAsset(GetRealNameFromAssetName(info.assetName));
+            if (result == null)
+            {
+                throw new ArgumentException($"无法加载{info}");
+            }
+
+            return result;
+        }
+
+        [CanBeNull]
+        internal Object LoadObject(Asset asset, bool isSprite)
+        {
+            var resource = LoadObject(asset.Info, isSprite);
+            _objInquiryDict.Add(resource, asset);
+            return resource;
+        }
+
+        [Obsolete]
         private static UnityObjectInfo<T> GetAsset<T>(Asset res, int refCount) where T : Object
         {
             if (res == null)
@@ -133,22 +208,24 @@ namespace Breakdawn.Unity
             return new UnityObjectInfo<T>(Utility.TypeCast<Object, T>(obj), res.Info.assetName);
         }
 
-        private static void LoadAsset(Asset res)
+        [Obsolete]
+        internal static void LoadAsset(Asset res)
         {
-            var ab = AssetBundleManager.Instance.GetAssetBundle(res.Info, true);
-            if (ab == null)
-            {
-                return;
-            }
-
-            res.Resource = res.IsSprite
-                ? ab.LoadAsset<Sprite>(GetRealNameFromAssetName(res.Info.assetName))
-                : ab.LoadAsset(GetRealNameFromAssetName(res.Info.assetName));
-
-            if (res.Resource == null)
-            {
-                Debug.LogError($"资源加载失败，name[{res.Info.assetName}]");
-            }
+//            var ab = AssetBundleManager.Instance.GetAssetBundle(res.Info, true);
+//            if (ab == null)
+//            {
+//                return;
+//            }
+//
+//            res.Resource = res.IsSprite
+//                ? ab.LoadAsset<Sprite>(GetRealNameFromAssetName(res.Info.assetName))
+//                : ab.LoadAsset(GetRealNameFromAssetName(res.Info.assetName));
+//
+//            if (res.Resource == null)
+//            {
+//                Debug.LogError($"资源加载失败，name[{res.Info.assetName}]");
+//            }
+            throw new NotImplementedException();
         }
 
         [CanBeNull]
@@ -405,7 +482,7 @@ namespace Breakdawn.Unity
             else
             {
                 AssetBundleManager.Instance.ReleaseAsset(res.Info);
-                res.Resource = null;
+                res.resource = null;
             }
         }
 
