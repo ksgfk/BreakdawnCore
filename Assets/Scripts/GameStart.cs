@@ -27,10 +27,10 @@ namespace Breakdawn.Test
                 Paths.Assets,
                 Paths.Prefabs);
 
-            ResourceManager.Instance.GetAsset(ref _a,
-                "Attack.prefab",
-                Paths.Assets,
-                Paths.Prefabs);
+//            ResourceManager.Instance.GetAsset(ref _a,
+//                "Attack.prefab",
+//                Paths.Assets,
+//                Paths.Prefabs);
 
             _attack = Instantiate(_attackPrefab.obj);
             ResourceManager.Instance.GetAsset(ref _testClip,

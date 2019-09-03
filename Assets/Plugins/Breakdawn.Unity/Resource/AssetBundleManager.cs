@@ -8,15 +8,59 @@ using UnityEngine;
 
 namespace Breakdawn.Unity
 {
-    internal struct AssetBundleRef
+    internal struct AssetBundleRef : IEquatable<AssetBundleRef>
     {
         public readonly AssetBundle assetBundle;
-        internal int refCount;
+        private int _refCount;
+
+        public int RefCount
+        {
+            get => _refCount;
+            set
+            {
+                if (_refCount + value < 0)
+                {
+                    throw new InvalidOperationException("引用计数不可为负数");
+                }
+
+                _refCount += _refCount;
+            }
+        }
 
         public AssetBundleRef(AssetBundle assetBundle)
         {
             this.assetBundle = assetBundle;
-            refCount = 0;
+            _refCount = 0;
+        }
+
+        public override int GetHashCode()
+        {
+            return assetBundle.GetInstanceID();
+        }
+
+        public bool Equals(AssetBundleRef other)
+        {
+            return assetBundle == other.assetBundle && RefCount == other.RefCount;
+        }
+
+        public static bool operator ==(AssetBundleRef x, AssetBundleRef y)
+        {
+            return x.Equals(y);
+        }
+
+        public static bool operator !=(AssetBundleRef x, AssetBundleRef y)
+        {
+            return !x.Equals(y);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(obj, null))
+            {
+                return false;
+            }
+
+            return obj is AssetBundleRef abRef && Equals(abRef);
         }
     }
 
@@ -42,13 +86,12 @@ namespace Breakdawn.Unity
         {
             if (_isInit)
             {
-                Debug.LogError($"不可重复初始化!");
-                return;
+                throw new InvalidOperationException($"不可重复初始化!");
             }
 
             _isInit = LoadConfig(path);
         }
-        
+
         private bool LoadConfig(string path)
         {
             var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
@@ -58,8 +101,7 @@ namespace Breakdawn.Unity
 
             if (config == null)
             {
-                Debug.LogError($"AB配置加载失败");
-                return false;
+                throw new ArgumentException($"AB配置加载失败，配置文件路径{path}");
             }
 
             foreach (var list in config.assetList)
@@ -91,7 +133,7 @@ namespace Breakdawn.Unity
         /// <param name="name">包名</param>
         /// <param name="isRefAsset">是否有资源引用该包</param>
         [CanBeNull]
-        private AssetBundle GetAssetBundle(string name, bool isRefAsset = false)
+        private AssetBundle GetAssetBundle(string name, bool isRefAsset)
         {
             CheckInit();
             if (!_abDict.TryGetValue(name, out var abRef))
@@ -100,8 +142,7 @@ namespace Breakdawn.Unity
                 var ab = LoadAssetBundle(fullABPath);
                 if (ab == null)
                 {
-                    Debug.LogError($"无法加载AB包:{name}");
-                    return null;
+                    throw new ArgumentException($"无法加载AB包:{name}");
                 }
 
                 abRef = new AssetBundleRef(ab);
@@ -113,7 +154,7 @@ namespace Breakdawn.Unity
                 return abRef.assetBundle;
             }
 
-            abRef.refCount++;
+            abRef.RefCount++;
             _abDict[name] = abRef;
             return abRef.assetBundle;
         }
@@ -138,12 +179,17 @@ namespace Breakdawn.Unity
         /// <param name="info">获取到的资源信息</param>
         /// <returns>AB引用</returns>
         [CanBeNull]
-        internal AssetBundle GetAssetAndAB(string name, out AssetInfo info)
+        internal AssetBundle GetAssetInfoAndAB(string name, out AssetInfo info)
         {
             info = GetAssetInfo(name);
             return GetAssetBundle(info);
         }
 
+        /// <summary>
+        /// 获取资源信息
+        /// </summary>
+        /// <param name="name">该资源的完整名称，带后缀</param>
+        /// <returns>AB信息</returns>
         [CanBeNull]
         internal AssetInfo GetAssetInfo(string name)
         {
@@ -162,13 +208,17 @@ namespace Breakdawn.Unity
             }
         }
 
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        /// <param name="assetInfo">资源信息</param>
+        /// <exception cref="InvalidOperationException">AB包未加载时抛出</exception>
         internal void ReleaseAsset(AssetInfo assetInfo)
         {
             CheckInit();
             if (!_abDict.TryGetValue(assetInfo.abName, out var abRef))
             {
-                Debug.LogError($"AB包未加载，name:{assetInfo.abName}");
-                return;
+                throw new InvalidOperationException($"AB包未加载，name:{assetInfo}");
             }
 
             if (abRef.assetBundle == null)
@@ -184,16 +234,6 @@ namespace Breakdawn.Unity
             UnloadAssetBundle(assetInfo.abName);
         }
 
-        public void ReleaseAsset(string name)
-        {
-            if (!_nameDict.TryGetValue(name, out var info))
-            {
-                return;
-            }
-
-            ReleaseAsset(info);
-        }
-
         private void UnloadAssetBundle(string name)
         {
             if (!_abDict.TryGetValue(name, out var abRef))
@@ -201,8 +241,8 @@ namespace Breakdawn.Unity
                 return;
             }
 
-            abRef.refCount--;
-            if (abRef.assetBundle == null || abRef.refCount > 0)
+            abRef.RefCount--;
+            if (abRef.assetBundle == null || abRef.RefCount > 0)
             {
                 return;
             }
@@ -211,6 +251,7 @@ namespace Breakdawn.Unity
             _abDict.Remove(name);
         }
 
+        [CanBeNull]
         private static AssetBundle LoadAssetBundle(string path)
         {
             return AssetBundle.LoadFromFile(path);

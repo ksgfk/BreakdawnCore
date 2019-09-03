@@ -238,13 +238,7 @@ namespace Breakdawn.Unity.Editor
                     }
                 }
 
-                var abBase = new AssetInfo
-                {
-                    abName = resPath[path],
-                    assetName = path,
-                    dependABs = dependList,
-                    hash = manifest.GetAssetBundleHash(resPath[path]).ToString()
-                };
+                var abBase = new AssetInfo(resPath[path], path, dependList);
                 config.assetList.Add(abBase);
             }
 
