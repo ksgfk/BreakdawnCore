@@ -163,7 +163,7 @@ namespace Breakdawn.Unity
         /// </summary>
         /// <param name="assetInfo">包名</param>
         /// <param name="isRefAsset">是否有资源引用该包</param>
-        internal AssetBundle GetAssetBundle(AssetInfo assetInfo, bool isRefAsset = false)
+        internal AssetBundle GetAssetBundle(AssetInfo assetInfo, bool isRefAsset)
         {
             var abRef = GetAssetBundle(assetInfo.abName, isRefAsset);
             ProcessDepend(assetInfo.dependABs);
@@ -174,13 +174,14 @@ namespace Breakdawn.Unity
         /// 获取资源所在的AssetBundle
         /// </summary>
         /// <param name="name">该资源的完整名称，带后缀</param>
+        /// <param name="isRefAsset">是否有资源引用该包</param>
         /// <param name="info">获取到的资源信息</param>
         /// <returns>AB引用</returns>
         [CanBeNull]
-        internal AssetBundle GetAssetInfoAndAB(string name, out AssetInfo info)
+        internal AssetBundle GetAssetInfoAndAB(string name, bool isRefAsset, out AssetInfo info)
         {
             info = GetAssetInfo(name);
-            return GetAssetBundle(info);
+            return GetAssetBundle(info, isRefAsset);
         }
 
         /// <summary>

@@ -1,28 +1,21 @@
-using System.Collections.Generic;
-using Breakdawn.Core;
+using System;
+using JetBrains.Annotations;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace Breakdawn.Unity
 {
-    public class LoadAssetAsyncRequest : Asset
+    /// <summary>
+    /// 异步资源请求
+    /// </summary>
+    public class AssetAsync : Asset
     {
         internal bool isDone = false;
-        internal List<ResourceManager.LoadComplete> callbacks = new List<ResourceManager.LoadComplete>();
-        internal bool isCached;
 
-        public bool IsDone
-        {
-            get
-            {
-                if (isDone)
-                {
-                    return true;
-                }
+        internal LoadComplete callbacks;
+//        internal bool isCached;
 
-                return Request?.isDone ?? false;
-            }
-        }
+        public bool IsDone => Request?.isDone ?? isDone;
 
         public float Progress
         {
@@ -39,7 +32,6 @@ namespace Breakdawn.Unity
 
         public string AssetName => Info.assetName;
         internal AssetBundleRequest Request { get; set; }
-        internal AssetBundle Bundle { get; set; }
 
         internal override Object Resource
         {
@@ -50,28 +42,34 @@ namespace Breakdawn.Unity
                     return resource;
                 }
 
+                if (Request == null)
+                {
+                    return null;
+                }
+
                 return Request.isDone ? Request.asset : null;
             }
         }
 
-        public LoadAssetAsyncRequest(AssetInfo info) : base(info)
+        public AssetAsync(AssetInfo info) : base(info)
         {
         }
 
         /// <summary>
-        /// 建议只在ResourceManager.LoadComplete委托内调用该方法
+        /// 建议只在LoadComplete委托内调用该方法
         /// </summary>
-        /// <param name="obj">资源本体</param>
         /// <typeparam name="T">资源类型</typeparam>
-        public void GetAsset<T>(ref UnityObjectInfo<T> obj) where T : Object
+        [CanBeNull]
+        public T GetAsset<T>() where T : Object
         {
             if (!IsDone)
             {
-                return;
+                return null;
             }
 
+            LastUseTime = DateTime.Now;
             RefCount++;
-            obj = new UnityObjectInfo<T>(Utility.TypeCast<Object, T>(Resource), Info.assetName);
+            return Resource as T;
         }
     }
 }

@@ -1,11 +1,14 @@
 ﻿using System.Runtime.CompilerServices;
+#if UNITY_2019
 using Unity.Mathematics;
+#endif
 using UnityEngine;
 
 namespace Breakdawn.Unity
 {
     public static class VectorExtension
     {
+#if UNITY_2019
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static (float, float) RotateDegree(float degrees, float x, float y)
         {
@@ -26,7 +29,7 @@ namespace Breakdawn.Unity
         /// 旋转（单位：度）
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector2 RotateDegree(ref this Vector2 v, float degrees)
+        public static Vector2 RotateDegree(this Vector2 v, float degrees)
         {
             var (x, y) = RotateDegree(degrees, v.x, v.y);
             return new Vector2(x, y);
@@ -36,7 +39,7 @@ namespace Breakdawn.Unity
         /// 旋转（单位：弧度）
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector2 RotateAngle(ref this Vector2 v, float angle)
+        public static Vector2 RotateAngle(this Vector2 v, float angle)
         {
             var (x, y) = RotateAngle(angle, v.x, v.y);
             return new Vector2(x, y);
@@ -46,7 +49,7 @@ namespace Breakdawn.Unity
         /// 旋转（单位：度）
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 RotateDegree(ref this float2 v, float degrees)
+        public static float2 RotateDegree(this float2 v, float degrees)
         {
             var (x, y) = RotateDegree(degrees, v.x, v.y);
             return new float2(x, y);
@@ -56,10 +59,11 @@ namespace Breakdawn.Unity
         /// 旋转（单位：弧度）
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 RotateAngle(ref this float2 v, float angle)
+        public static float2 RotateAngle(this float2 v, float angle)
         {
             var (x, y) = RotateAngle(angle, v.x, v.y);
             return new float2(x, y);
         }
+#endif
     }
 }

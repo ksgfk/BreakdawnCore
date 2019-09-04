@@ -26,7 +26,7 @@ namespace Breakdawn.Test
         public void OnButtonClick()
         {
             Destroy(_attack);
-            ResourceManager.Instance.RecycleAsset(_attackPrefab);
+            ResourceManager.Instance.RecycleAsset(_attackPrefab, true);
             _attackPrefab = null;
             _attack = null;
         }
