@@ -11,9 +11,7 @@ namespace Breakdawn.Unity
     public class AssetAsync : Asset
     {
         internal bool isDone = false;
-
         internal LoadComplete callbacks;
-//        internal bool isCached;
 
         public bool IsDone => Request?.isDone ?? isDone;
 

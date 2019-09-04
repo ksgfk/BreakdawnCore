@@ -43,28 +43,43 @@ namespace Breakdawn.Unity
 
         #region 同步加载
 
+        /// <summary>
+        /// 同步获取/加载资源
+        /// </summary>
+        /// <param name="name">资源完整路径名</param>
+        /// <typeparam name="T">资源类型</typeparam>
         public T GetAsset<T>(string name) where T : Object
         {
             var info = AssetBundleManager.Instance.GetAssetInfo(name);
             var asset = GetAssetFromCache(info) ?? new Asset(info);
             _assetDict.Add(info, asset);
+            _objInquiryDict.Add(asset.Resource, asset);
             return asset.Resource as T;
         }
 
-        internal Object LoadObject(Asset asset, bool isSprite)
+        /// <summary>
+        /// 加载资源
+        /// </summary>
+        /// <param name="info">资源信息</param>
+        /// <param name="isSprite">是否是图集</param>
+        /// <returns>资源本体</returns>
+        /// <exception cref="ArgumentException">无法加载时抛出</exception>
+        internal static Object LoadObject(AssetInfo info, bool isSprite)
         {
-            var info = asset.Info;
             var ab = AssetBundleManager.Instance.GetAssetBundle(info, true);
-            var resource = isSprite
-                ? ab.LoadAsset<Sprite>(GetRealNameFromAssetName(info.assetName))
-                : ab.LoadAsset(GetRealNameFromAssetName(info.assetName));
+            var resource = isSprite ? ab.LoadAsset<Sprite>(info.assetName) : ab.LoadAsset(info.assetName);
             if (resource == null)
             {
                 throw new ArgumentException($"无法加载{info}");
             }
 
-            _objInquiryDict.Add(resource, asset);
             return resource;
+        }
+
+        public void Cache(string name)
+        {
+            var asset = GetAsset<Object>(name);
+            RecycleAsset(asset, true);
         }
 
         #endregion
@@ -85,7 +100,7 @@ namespace Breakdawn.Unity
 
         private void CheckInitAsync()
         {
-            if (_isInitAsync)
+            if (!_isInitAsync)
             {
                 throw new InvalidOperationException("异步加载未初始化");
             }
@@ -100,11 +115,17 @@ namespace Breakdawn.Unity
                 if (process.Request == null)
                 {
                     process.Request = process.IsSprite
-                        ? ab.LoadAssetAsync<Sprite>(GetRealNameFromAssetName(process.AssetName))
-                        : ab.LoadAssetAsync(GetRealNameFromAssetName(process.AssetName));
+                        ? ab.LoadAssetAsync<Sprite>(process.AssetName)
+                        : ab.LoadAssetAsync(process.AssetName);
                 }
 
                 yield return process.Request;
+                _asyncInquiryDict.Remove(process.Info);
+                AddAssetToDict(process.Info, process);
+
+                process.resource = process.Request.asset;
+                process.isDone = true;
+                process.Request = null;
                 process.LastUseTime = DateTime.Now;
                 foreach (var callback in process.callbacks.GetInvocationList())
                 {
@@ -118,21 +139,22 @@ namespace Breakdawn.Unity
                     }
                 }
 
-                process.resource = process.Request.asset;
-                process.isDone = true;
-                process.Request = null;
                 process.callbacks = null;
-
-                _asyncInquiryDict.Remove(process.Info);
-                AddAssetToDict(process.Info, process);
             }
 
             _mono.StopCoroutine(_loadCoroutine);
             _loadCoroutine = null;
         }
 
+        /// <summary>
+        /// 异步获取/加载资源
+        /// </summary>
+        /// <param name="name">资源完整路径名</param>
+        /// <param name="onComplete">资源加载完毕时触发委托</param>
+        /// <returns>资源异步加载请求</returns>
         public AssetAsync GetAssetAsync(string name, LoadComplete onComplete)
         {
+            CheckInitAsync();
             var info = AssetBundleManager.Instance.GetAssetInfo(name);
             var asset = GetAssetFromCacheAndLoadQueue(info);
             if (asset != null)
@@ -175,8 +197,20 @@ namespace Breakdawn.Unity
             }
         }
 
+        public AssetAsync CacheAsync(string name)
+        {
+            return GetAssetAsync(name, asset => RecycleAsset(asset.GetAsset<Object>(), true));
+        }
+
         #endregion
 
+        /// <summary>
+        /// 回收资源
+        /// </summary>
+        /// <param name="obj">资源</param>
+        /// <param name="isCache">是否缓存</param>
+        /// <exception cref="ArgumentNullException">参数obj为null</exception>
+        /// <exception cref="ArgumentException">资源未初始化</exception>
         public void RecycleAsset(Object obj, bool isCache)
         {
             if (obj == null)
@@ -257,11 +291,12 @@ namespace Breakdawn.Unity
             _objInquiryDict.Add(asset.Resource, asset);
         }
 
-        private static string GetRealNameFromAssetName(string assetName)
+        private void WashOut()
         {
-            var start = assetName.LastIndexOf('/');
-            var end = assetName.LastIndexOf('.');
-            return assetName.Substring(start + 1, end - start - 1);
+            while (DateTime.Now - _noRef.Last.Value.LastUseTime > new TimeSpan(0, 5, 0))
+            {
+                _noRef.RemoveLast();
+            }
         }
     }
 }

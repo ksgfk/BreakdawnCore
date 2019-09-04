@@ -6,9 +6,7 @@ namespace Breakdawn.Test
     public class AsyncTest : MonoBehaviour
     {
         private AssetAsync _async;
-        private AssetAsync _test;
         private GameObject _prefab;
-        private GameObject _t;
         private GameObject _ins;
 
         private void Awake()
@@ -21,8 +19,7 @@ namespace Breakdawn.Test
         {
             _async = ResourceManager.Instance.GetAssetAsync($"{Paths.Assets}/{Paths.Prefabs}/Attack.prefab"
                 , request => _prefab = request.GetAsset<GameObject>());
-            _test = ResourceManager.Instance.GetAssetAsync($"{Paths.Assets}/{Paths.Prefabs}/Attack.prefab"
-                , request => _t = request.GetAsset<GameObject>());
+            ResourceManager.Instance.CacheAsync("Assets/Models/benghuai/ModelBoomOceanSoulOre.png");
         }
 
         public void OnButtonClick()
@@ -49,7 +46,7 @@ namespace Breakdawn.Test
         {
             Destroy(_ins);
             _ins = null;
-            ResourceManager.Instance.RecycleAsset(_prefab, false);
+            ResourceManager.Instance.RecycleAsset(_prefab, true);
             _async = null;
             _prefab = null;
         }

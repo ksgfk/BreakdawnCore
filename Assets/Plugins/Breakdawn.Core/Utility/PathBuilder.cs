@@ -1,9 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Breakdawn.Core
 {
-    public struct PathBuilder
+    public struct PathBuilder : IEquatable<PathBuilder>
     {
         private StringBuilder _builder;
 
@@ -32,6 +33,11 @@ namespace Breakdawn.Core
         public string Get()
         {
             return _builder.ToString();
+        }
+
+        public bool Equals(PathBuilder other)
+        {
+            return Get() == other.Get();
         }
     }
 }

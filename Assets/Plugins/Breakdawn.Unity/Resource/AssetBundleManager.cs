@@ -64,6 +64,9 @@ namespace Breakdawn.Unity
         }
     }
 
+    /// <summary>
+    /// TODO:使用Unity自带Manifest代替AssetInfo
+    /// </summary>
     internal class AssetBundleManager : Singleton<AssetBundleManager>
     {
         /// <summary>
@@ -139,7 +142,7 @@ namespace Breakdawn.Unity
             {
                 var fullABPath = $"{Application.streamingAssetsPath}/{name}";
                 var ab = LoadAssetBundle(fullABPath);
-                if (ab == null)
+                if (!ab)
                 {
                     throw new ArgumentException($"无法加载AB包:{name}");
                 }
