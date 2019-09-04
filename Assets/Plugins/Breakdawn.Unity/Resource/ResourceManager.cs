@@ -291,7 +291,7 @@ namespace Breakdawn.Unity
             _objInquiryDict.Add(asset.Resource, asset);
         }
 
-        private void WashOut()
+        public void WashOut()
         {
             while (DateTime.Now - _noRef.Last.Value.LastUseTime > new TimeSpan(0, 5, 0))
             {

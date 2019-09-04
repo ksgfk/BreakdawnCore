@@ -170,7 +170,7 @@ namespace Breakdawn.Unity.Editor
             var manifest = BuildPipeline.BuildAssetBundles(_exportPath,
                 BuildAssetBundleOptions.ChunkBasedCompression,
                 EditorUserBuildSettings.activeBuildTarget);
-            WriteABsInfo(resPaths, manifest);
+            WriteABsInfo(resPaths);
         }
 
         private static void RemoveNoUseAB()
@@ -204,7 +204,7 @@ namespace Breakdawn.Unity.Editor
             return abs.Any(str => str == name);
         }
 
-        private static void WriteABsInfo(Dictionary<string, string> resPath, AssetBundleManifest manifest)
+        private static void WriteABsInfo(Dictionary<string, string> resPath)
         {
             var config = new AssetConfig
             {

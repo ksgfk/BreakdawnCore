@@ -11,6 +11,30 @@ namespace Breakdawn.Unity
     /// </summary>
     public class ObjectManager : Singleton<ObjectManager>
     {
+        private GameObject _poolGo;
+        private bool _isInit;
+
+        private readonly Dictionary<AssetInfo, ObjectPool<Object>> _pools =
+            new Dictionary<AssetInfo, ObjectPool<Object>>();
+
+        private ObjectManager()
+        {
+        }
+
+        public void Init(GameObject pool)
+        {
+            _poolGo = pool;
+            _isInit = true;
+        }
+
+        private void CheckInit()
+        {
+            if (!_isInit)
+            {
+                throw new InvalidOperationException($"对象池管理未初始化");
+            }
+        }
+
 //        private GameObject _recycle;
 //        private bool _isInit;
 //
