@@ -30,6 +30,7 @@ namespace Breakdawn.Core
         public event Action<T> OnRelease;
 
         public int InstanceCount { get; private set; }
+        public int Count => _pool.Count;
 
         public ObjectPool(IFactory<T> factory, int initCount = 0)
         {
@@ -100,7 +101,8 @@ namespace Breakdawn.Core
 
         public void Release(int remain)
         {
-            for (var i = 0; i < _pool.Count - remain; i++)
+            var count = _pool.Count;
+            for (var i = 0; i < count - remain; i++)
             {
                 OnRelease?.Invoke(_pool.Peek());
                 _pool.Pop();
