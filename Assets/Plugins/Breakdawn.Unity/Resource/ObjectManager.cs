@@ -7,15 +7,17 @@ using Object = UnityEngine.Object;
 namespace Breakdawn.Unity
 {
     /// <summary>
-    /// TODO:WIP
+    /// TODO:WIP异步
     /// </summary>
     public class ObjectManager : Singleton<ObjectManager>
     {
         private GameObject _poolGo;
         private bool _isInit;
 
-        private readonly Dictionary<AssetInfo, ObjectPool<Object>> _pools =
-            new Dictionary<AssetInfo, ObjectPool<Object>>();
+        private readonly Dictionary<string, ObjectPool<GameObject>> _pools =
+            new Dictionary<string, ObjectPool<GameObject>>();
+
+        private readonly Dictionary<GameObject, string> _objQueryDict = new Dictionary<GameObject, string>();
 
         private ObjectManager()
         {
@@ -27,6 +29,69 @@ namespace Breakdawn.Unity
             _isInit = true;
         }
 
+        #region 同步加载对象池
+
+        public ObjectPool<GameObject> CreatePool(string name, int count)
+        {
+            return CreatePool(name, count, go => go.Show(), go => go.Hide(), Object.Destroy);
+        }
+
+        public ObjectPool<GameObject> CreatePool(string name, int count, Action<GameObject> onGet,
+            Action<GameObject> onRecycle,
+            Action<GameObject> onRelease)
+        {
+            CheckInit();
+            if (_pools.TryGetValue(name, out var pool))
+            {
+                return pool;
+            }
+
+            var asset = ResourceManager.Instance.GetAsset<GameObject>(name);
+            if (!asset)
+            {
+                throw new ArgumentNullException();
+            }
+
+            pool = new ObjectPool<GameObject>(() =>
+            {
+                var obj = Object.Instantiate(asset, _poolGo.transform).Hide();
+                _objQueryDict.Add(obj, name);
+                return obj;
+            }, count);
+            pool.OnGetObject += onGet;
+            pool.OnRecycling += onRecycle;
+            pool.OnRelease += onRelease;
+            pool.OnRelease += obj => _objQueryDict.Remove(obj);
+            _pools.Add(name, pool);
+            return pool;
+        }
+
+        public GameObject Get(string name)
+        {
+            CheckInit();
+            return _pools.TryGetValue(name, out var pool) ? pool.Get() : CreatePool(name, 1).Get();
+        }
+
+        #endregion
+
+        public void ReleaseAllPools()
+        {
+            foreach (var pools in _pools.Values)
+            {
+                pools.Release();
+            }
+        }
+
+        public bool Recycle(GameObject obj)
+        {
+            if (!_objQueryDict.TryGetValue(obj, out var name))
+            {
+                throw new ArgumentException($"{obj}不是由对象池生成的");
+            }
+
+            return _pools[name].Recycle(obj);
+        }
+
         private void CheckInit()
         {
             if (!_isInit)
@@ -34,103 +99,5 @@ namespace Breakdawn.Unity
                 throw new InvalidOperationException($"对象池管理未初始化");
             }
         }
-
-//        private GameObject _recycle;
-//        private bool _isInit;
-//
-//        private readonly Dictionary<string, ObjectPool<UnityObjectInfo<GameObject>>> _pools =
-//            new Dictionary<string, ObjectPool<UnityObjectInfo<GameObject>>>();
-//
-//        private ObjectManager()
-//        {
-//        }
-//
-//        public void Init(GameObject pool)
-//        {
-//            _recycle = pool;
-//            _isInit = true;
-//        }
-//
-//        #region 同步加载的对象池
-//
-//        public UnityObjectInfo<GameObject> GetObject(string name)
-//        {
-//            CheckInit();
-//            if (TryGetObjectFromPool(name, out var obj))
-//            {
-//                return obj;
-//            }
-//
-//            var pool = GetNewPool(GetObjInfo(name), 1);
-//            _pools.Add(name, pool);
-//            return pool.Get();
-//        }
-//
-//        public void InitPool(string name, int initCount)
-//        {
-//            CheckInit();
-//            if (_pools.ContainsKey(name))
-//            {
-//                return;
-//            }
-//
-//            _pools.Add(name, GetNewPool(GetObjInfo(name), initCount));
-//        }
-//
-//        private static UnityObjectInfo<GameObject> GetObjInfo(string name)
-//        {
-//            UnityObjectInfo<GameObject> objInfo = default;
-////            ResourceManager.Instance.GetAsset(name, ref objInfo);//TODO:WIP
-//            if (!objInfo.IsValid())
-//            {
-//                throw new ArgumentException($"无法找到资源{name}");
-//            }
-//
-//            return objInfo;
-//        }
-//
-//        #endregion
-//
-//        private void CheckInit()
-//        {
-//            if (!_isInit)
-//            {
-//                throw new InvalidOperationException($"对象池管理未初始化");
-//            }
-//        }
-//
-//        private bool TryGetObjectFromPool(string name, out UnityObjectInfo<GameObject> obj)
-//        {
-//            if (!_pools.TryGetValue(name, out var pool))
-//            {
-//                obj = default;
-//                return false;
-//            }
-//
-//            obj = pool.Get();
-//            return true;
-//        }
-//
-//        private ObjectPool<UnityObjectInfo<GameObject>> GetNewPool(UnityObjectInfo<GameObject> objInfo, int initCount)
-//        {
-//            var pool = new ObjectPool<UnityObjectInfo<GameObject>>(
-//                new ObjectFactory<UnityObjectInfo<GameObject>>(() =>
-//                {
-//                    var instance = Object.Instantiate(objInfo.obj);
-//                    var info = new UnityObjectInfo<GameObject>(instance, objInfo.rawName);
-//                    HideObject(info);
-//                    return info;
-//                }), initCount);
-//            pool.OnGetObject += info => info.obj.Show();
-//            pool.OnRecycling += HideObject;
-//            pool.OnRelease += info => Object.Destroy(info.obj);
-//            return pool;
-//        }
-//
-//        private void HideObject(UnityObjectInfo<GameObject> info)
-//        {
-//            info.obj.Hide();
-//            info.obj.transform.parent = _recycle.transform;
-//        }
     }
 }

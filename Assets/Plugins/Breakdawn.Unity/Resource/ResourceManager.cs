@@ -51,6 +51,16 @@ namespace Breakdawn.Unity
         public T GetAsset<T>(string name) where T : Object
         {
             var info = AssetBundleManager.Instance.GetAssetInfo(name);
+            return GetAsset<T>(info);
+        }
+
+        /// <summary>
+        /// 同步获取/加载资源
+        /// </summary>
+        /// <param name="info">资源信息</param>
+        /// <typeparam name="T">资源类型</typeparam>
+        public T GetAsset<T>(AssetInfo info) where T : Object
+        {
             var asset = GetAssetFromCache(info) ?? new Asset(info);
             _assetDict.Add(info, asset);
             _objInquiryDict.Add(asset.Resource, asset);

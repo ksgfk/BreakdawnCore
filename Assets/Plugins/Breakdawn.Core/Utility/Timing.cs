@@ -6,7 +6,7 @@ using Timer = System.Timers.Timer;
 
 namespace Breakdawn.Core
 {
-    internal struct TimingTask
+    internal struct TimingTask : IEquatable<TimingTask>
     {
         internal readonly Guid id;
         internal readonly Action<Guid> task;
@@ -23,9 +23,24 @@ namespace Breakdawn.Core
             this.loopCount = loopCount;
         }
 
+        public bool Equals(TimingTask other)
+        {
+            return id == other.id;
+        }
+
         public override int GetHashCode()
         {
             return id.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(obj, null))
+            {
+                return false;
+            }
+
+            return obj is TimingTask t && Equals(t);
         }
     }
 

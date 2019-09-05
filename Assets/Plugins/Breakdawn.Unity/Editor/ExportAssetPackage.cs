@@ -87,7 +87,7 @@ namespace Breakdawn.Unity.Editor
             Application.OpenURL(_targetPath);
         }
 
-        private void OnDisable()
+        private void OnDestroy()
         {
             if (_assetPackageConfig == null)
             {

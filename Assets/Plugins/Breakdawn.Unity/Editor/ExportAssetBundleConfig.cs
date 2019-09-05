@@ -13,9 +13,14 @@ namespace Breakdawn.Unity.Editor
     }
 
     [Serializable]
-    public struct ABFileDirName
+    public struct ABFileDirName : IEquatable<ABFileDirName>
     {
         public string name;
         public string path;
+
+        public bool Equals(ABFileDirName other)
+        {
+            return path + name == other.name + other.path;
+        }
     }
 }

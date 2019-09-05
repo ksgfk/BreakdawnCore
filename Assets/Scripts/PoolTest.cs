@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Breakdawn.Core;
 using Breakdawn.Unity;
 using UnityEngine;
 
@@ -7,47 +6,32 @@ namespace Breakdawn.Test
 {
     public class PoolTest : MonoBehaviour
     {
-//        public GameObject cube;
-//        public GameObject parent;
-//
-//        private ObjectPool<GameObject> _pool;
+        private Queue<GameObject> _obj = new Queue<GameObject>();
 
         private void Awake()
         {
-//            var factory = new ObjectFactory<GameObject>(() => Instantiate(cube, parent.transform, true).Hide());
-//            _pool = new ObjectPool<GameObject>(factory, 5);
-//            _pool.OnGetObject += go => go.Show();
-//            _pool.OnRecycling += go => go.Hide();
-//            _pool.OnRelease += Destroy;
-//            AssetBundleManager.Instance.Init(Application.streamingAssetsPath);
+            ResourceManager.Instance.Init(Paths.AssetConfig, Paths.Assets, Paths.StreamingAssets);
+            ObjectManager.Instance.Init(gameObject);
         }
-
-//        private float _last;
-//        private Stack<GameObject> _s = new Stack<GameObject>();
 
         private void Update()
         {
-//            if (Time.time > 5 && Time.time <= 20)
-//            {
-//                if (Time.time - _last > 1)
-//                {
-//                    _s.Push(_pool.Get());
-//                    _last = Time.time;
-//                }
-//            }
-//
-//            if (Time.time > 20)
-//            {
-//                if (_s.Count > 0)
-//                {
-//                    _pool.Recycle(_s.Pop());
-//                }
-//            }
-//
-//            if (Time.time > 30)
-//            {
-//                _pool.Release();
-//            }
+            if (Input.GetKeyDown(KeyCode.F))
+            {
+                var go = ObjectManager.Instance.Get("Assets/Prefabs/Cube.prefab");
+                go.transform.position = new Vector3(Mathf.PerlinNoise(Time.time, 0) * 5,
+                    Mathf.PerlinNoise(Time.time, 0) * 5,
+                    Mathf.PerlinNoise(Time.time, 0) * 5);
+                _obj.Enqueue(go);
+            }
+            else if (Input.GetKeyDown(KeyCode.D))
+            {
+                Debug.Log(ObjectManager.Instance.Recycle(_obj.Dequeue()));
+            }
+            else if (Input.GetKeyDown(KeyCode.S))
+            {
+                ObjectManager.Instance.ReleaseAllPools();
+            }
         }
     }
 }

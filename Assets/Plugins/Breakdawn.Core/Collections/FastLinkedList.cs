@@ -58,7 +58,7 @@ namespace Breakdawn.Core
 
         public bool Remove(T item)
         {
-            if (item == null)
+            if (Equals(item, default(T)))
             {
                 return false;
             }

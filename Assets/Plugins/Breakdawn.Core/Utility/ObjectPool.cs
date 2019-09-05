@@ -69,15 +69,13 @@ namespace Breakdawn.Core
 
         public bool Recycle(T @object)
         {
-            var checkResult = OnPreRecycle?.Invoke(@object);
-            if (!checkResult.HasValue)
+            if (OnPreRecycle != null)
             {
-                return false;
-            }
-
-            if (!checkResult.Value)
-            {
-                return false;
+                var checkResult = OnPreRecycle(@object);
+                if (!checkResult)
+                {
+                    return false;
+                }
             }
 
             if (_pool.Count + 1 > InstanceCount)
@@ -106,10 +104,10 @@ namespace Breakdawn.Core
             {
                 OnRelease?.Invoke(_pool.Peek());
                 _pool.Pop();
+                InstanceCount--;
             }
 
             _pool.TrimExcess();
-            InstanceCount = _pool.Count;
         }
     }
 }

@@ -10,7 +10,7 @@ namespace Breakdawn.Unity
     /// </summary>
     public class AssetAsync : Asset
     {
-        internal bool isDone = false;
+        internal bool isDone;
         internal LoadComplete callbacks;
 
         public bool IsDone => Request?.isDone ?? isDone;
@@ -35,7 +35,7 @@ namespace Breakdawn.Unity
         {
             get
             {
-                if (resource != null)
+                if (resource)
                 {
                     return resource;
                 }

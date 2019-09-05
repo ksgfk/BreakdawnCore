@@ -17,9 +17,15 @@ namespace Breakdawn.Unity
         {
             get
             {
+                var result = resource ? resource : ResourceManager.LoadObject(Info, IsSprite);
+                if (!result)
+                {
+                    throw new ArgumentException();
+                }
+
                 LastUseTime = DateTime.Now;
                 RefCount++;
-                return resource != null ? resource : ResourceManager.LoadObject(Info, IsSprite);
+                return result;
             }
         }
 
