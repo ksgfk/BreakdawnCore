@@ -6,6 +6,25 @@ using Object = UnityEngine.Object;
 
 namespace Breakdawn.Unity
 {
+    internal struct CacheObjectInfo : IEquatable<CacheObjectInfo>
+    {
+        public readonly GameObject obj;
+        public readonly string rawName;
+        public bool isUse;
+
+        public CacheObjectInfo(GameObject obj, string rawName, bool isUse)
+        {
+            this.obj = obj;
+            this.rawName = rawName;
+            this.isUse = isUse;
+        }
+
+        public bool Equals(CacheObjectInfo other)
+        {
+            return obj == other.obj && rawName == other.rawName;
+        }
+    }
+
     /// <summary>
     /// TODO:WIP异步
     /// </summary>
@@ -17,7 +36,8 @@ namespace Breakdawn.Unity
         private readonly Dictionary<string, ObjectPool<GameObject>> _pools =
             new Dictionary<string, ObjectPool<GameObject>>();
 
-        private readonly Dictionary<GameObject, string> _objQueryDict = new Dictionary<GameObject, string>();
+        private readonly Dictionary<GameObject, CacheObjectInfo> _objQueryDict =
+            new Dictionary<GameObject, CacheObjectInfo>();
 
         private ObjectManager()
         {
@@ -55,7 +75,7 @@ namespace Breakdawn.Unity
             pool = new ObjectPool<GameObject>(() =>
             {
                 var obj = Object.Instantiate(asset, _poolGo.transform).Hide();
-                _objQueryDict.Add(obj, name);
+                _objQueryDict.Add(obj, new CacheObjectInfo(obj, name, false));
                 return obj;
             }, count);
             pool.OnGetObject += onGet;
@@ -69,7 +89,20 @@ namespace Breakdawn.Unity
         public GameObject Get(string name)
         {
             CheckInit();
-            return _pools.TryGetValue(name, out var pool) ? pool.Get() : CreatePool(name, 1).Get();
+            var go = _pools.TryGetValue(name, out var pool) ? pool.Get() : CreatePool(name, 1).Get();
+            if (!_objQueryDict.TryGetValue(go, out var info))
+            {
+                throw new ArgumentException();
+            }
+
+            if (info.isUse)
+            {
+                throw new InvalidOperationException($"已经使用该资源了{go}");
+            }
+
+            info.isUse = true;
+            _objQueryDict[go] = info;
+            return go;
         }
 
         #endregion
@@ -84,12 +117,19 @@ namespace Breakdawn.Unity
 
         public bool Recycle(GameObject obj)
         {
-            if (!_objQueryDict.TryGetValue(obj, out var name))
+            if (!_objQueryDict.TryGetValue(obj, out var info))
             {
                 throw new ArgumentException($"{obj}不是由对象池生成的");
             }
 
-            return _pools[name].Recycle(obj);
+            if (!info.isUse)
+            {
+                throw new InvalidOperationException($"已经回收该资源了{obj}");
+            }
+
+            info.isUse = false;
+            _objQueryDict[obj] = info;
+            return _pools[info.rawName].Recycle(obj);
         }
 
         private void CheckInit()
