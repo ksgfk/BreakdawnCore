@@ -1,8 +1,8 @@
 {
     "name": "Breakdawn.Unity",
     "references": [
-        "GUID:51bf32196d49426419227baddec2daf4",
-        "GUID:d8b63aba1907145bea998dd612889d6b"
+        "Breakdawn.Core",
+        "Unity.Mathematics"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -1,4 +1,7 @@
-﻿using System;
+﻿#undef DEBUG
+#define DEBUG
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -242,6 +245,7 @@ namespace Breakdawn.Unity.Editor
                 config.assetList.Add(abBase);
             }
 
+#if DEBUG
             var xmlPath = $"{Application.dataPath}/../Logs/AssetConfig.xml";
             var fileStream = new FileStream(xmlPath, FileMode.Create, FileAccess.Write, FileShare.Write);
             var writer = new StreamWriter(fileStream, Encoding.UTF8);
@@ -249,7 +253,7 @@ namespace Breakdawn.Unity.Editor
             serializer.Serialize(writer, config);
             writer.Close();
             fileStream.Close();
-
+#endif
             var bytePath = $"{_exportPath}/AssetConfig.config";
             var fs = new FileStream(bytePath, FileMode.Create, FileAccess.Write, FileShare.Write);
             var binary = new BinaryFormatter();
