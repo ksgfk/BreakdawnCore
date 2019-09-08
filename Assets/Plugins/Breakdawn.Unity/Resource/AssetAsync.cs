@@ -31,7 +31,7 @@ namespace Breakdawn.Unity
         public string AssetName => Info.assetName;
         internal AssetBundleRequest Request { get; set; }
 
-        internal override Object Resource
+        internal virtual Object Resource
         {
             get
             {
@@ -66,7 +66,7 @@ namespace Breakdawn.Unity
             }
 
             LastUseTime = DateTime.Now;
-            RefCount++;
+            refCount += 1;
             return resource as T;
         }
     }

@@ -9,16 +9,15 @@ namespace Breakdawn.Unity
     public class Asset
     {
         internal Object resource;
-        private int _refCount;
+        protected int refCount;
 
         public AssetInfo Info { get; }
-        internal virtual Object Resource => resource;
         internal DateTime LastUseTime { get; set; }
         public bool IsSprite { get; }
 
         internal int RefCount
         {
-            get => _refCount;
+            get => refCount;
             set
             {
                 if (value < 0)
@@ -26,7 +25,7 @@ namespace Breakdawn.Unity
                     throw new InvalidOperationException($"引用计数不能小于0，name:{Info.assetName}，refCount:{value}");
                 }
 
-                _refCount = value;
+                refCount = value;
             }
         }
 
@@ -44,7 +43,7 @@ namespace Breakdawn.Unity
                 IsSprite = false;
             }
 
-            _refCount = 0;
+            refCount = 0;
         }
 
         public virtual T GetAsset<T>() where T : Object
@@ -57,7 +56,7 @@ namespace Breakdawn.Unity
 
             resource = result;
             LastUseTime = DateTime.Now;
-            _refCount += 1;
+            refCount += 1;
             return result as T;
         }
 
