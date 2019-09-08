@@ -36,13 +36,20 @@ namespace Breakdawn.Unity.Editor
 
         private void OnEnable()
         {
-            var stream = new FileStream($"{Application.dataPath}/Resources/ExportAssetPackageConfig.xml",
-                FileMode.Open, FileAccess.Read, FileShare.Read);
-            var reader = new StreamReader(stream, Encoding.UTF8);
-            var xml = new XmlSerializer(typeof(ExportAssetPackageConfig));
-            _assetPackageConfig = xml.Deserialize(reader) as ExportAssetPackageConfig;
-            stream.Close();
-            reader.Close();
+            try
+            {
+                var stream = new FileStream($"{Application.dataPath}/Resources/ExportAssetPackageConfig.xml",
+                    FileMode.Open, FileAccess.Read, FileShare.Read);
+                var reader = new StreamReader(stream, Encoding.UTF8);
+                var xml = new XmlSerializer(typeof(ExportAssetPackageConfig));
+                _assetPackageConfig = xml.Deserialize(reader) as ExportAssetPackageConfig;
+                stream.Close();
+                reader.Close();
+            }
+            catch (FileNotFoundException)
+            {
+                _assetPackageConfig = new ExportAssetPackageConfig();
+            }
 
             if (_assetPackageConfig != null)
             {
