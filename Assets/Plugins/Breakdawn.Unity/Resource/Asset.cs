@@ -12,25 +12,8 @@ namespace Breakdawn.Unity
         private int _refCount;
 
         public AssetInfo Info { get; }
-
-        internal virtual Object Resource
-        {
-            get
-            {
-                var result = resource ? resource : ResourceManager.LoadObject(Info, IsSprite);
-                if (!result)
-                {
-                    throw new ArgumentException();
-                }
-
-                LastUseTime = DateTime.Now;
-                RefCount++;
-                return result;
-            }
-        }
-
+        internal virtual Object Resource => resource;
         internal DateTime LastUseTime { get; set; }
-
         public bool IsSprite { get; }
 
         internal int RefCount
@@ -60,6 +43,22 @@ namespace Breakdawn.Unity
             {
                 IsSprite = false;
             }
+
+            _refCount = 0;
+        }
+
+        public virtual T GetAsset<T>() where T : Object
+        {
+            var result = resource ? resource : ResourceManager.LoadObject(Info, IsSprite);
+            if (!result)
+            {
+                throw new ArgumentException();
+            }
+
+            resource = result;
+            LastUseTime = DateTime.Now;
+            _refCount += 1;
+            return result as T;
         }
 
         public override bool Equals(object obj)

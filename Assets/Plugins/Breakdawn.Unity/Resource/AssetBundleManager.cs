@@ -222,7 +222,7 @@ namespace Breakdawn.Unity
                 throw new InvalidOperationException($"AB包未加载，name:{assetInfo}");
             }
 
-            if (abRef.assetBundle == null)
+            if (!abRef.assetBundle)
             {
                 return;
             }
@@ -243,7 +243,7 @@ namespace Breakdawn.Unity
             }
 
             abRef.RefCount--;
-            if (abRef.assetBundle == null || abRef.RefCount > 0)
+            if (!abRef.assetBundle || abRef.RefCount > 0)
             {
                 return;
             }

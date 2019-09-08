@@ -19,7 +19,7 @@ namespace Breakdawn.Unity
         {
             get
             {
-                if (resource != null)
+                if (!resource)
                 {
                     return 1;
                 }
@@ -58,7 +58,7 @@ namespace Breakdawn.Unity
         /// </summary>
         /// <typeparam name="T">资源类型</typeparam>
         [CanBeNull]
-        public T GetAsset<T>() where T : Object
+        public override T GetAsset<T>()
         {
             if (!IsDone)
             {
@@ -67,7 +67,7 @@ namespace Breakdawn.Unity
 
             LastUseTime = DateTime.Now;
             RefCount++;
-            return Resource as T;
+            return resource as T;
         }
     }
 }

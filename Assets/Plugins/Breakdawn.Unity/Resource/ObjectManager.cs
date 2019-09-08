@@ -94,9 +94,10 @@ namespace Breakdawn.Unity
                 throw new ArgumentNullException();
             }
 
+            _rawAsset.Add(name, asset);
             pool = new ObjectPool<GameObject>(() =>
             {
-                var obj = Object.Instantiate(asset, _poolGo.transform).Hide();
+                var obj = Object.Instantiate(_rawAsset[name], _poolGo.transform).Hide();
                 _objQueryDict.Add(obj, new CacheObjectInfo(obj, name, false));
                 return obj;
             }, count);
@@ -105,7 +106,7 @@ namespace Breakdawn.Unity
             pool.OnRelease += onRelease;
             pool.OnRelease += obj => _objQueryDict.Remove(obj);
             _pools.Add(name, pool);
-            _rawAsset.Add(name, asset);
+
             return pool;
         }
 
@@ -192,13 +193,19 @@ namespace Breakdawn.Unity
         /// 销毁对象池
         /// </summary>
         /// <param name="name">名字</param>
+        /// <param name="isCache">是否缓存资源</param>
         /// <exception cref="ArgumentException">没有对象池</exception>
         /// <exception cref="InvalidOperationException">由该池创建的物体未完全回收</exception>
-        public void DestroyPool(string name)
+        public void DestroyPool(string name, bool isCache)
         {
             if (!_pools.TryGetValue(name, out var pool))
             {
                 throw new ArgumentException($"没有对象池{name}");
+            }
+
+            if (!_rawAsset.TryGetValue(name, out var asset))
+            {
+                throw new ArgumentException($"没有资源{name}");
             }
 
             if (pool.InstanceCount != pool.Count)
@@ -208,6 +215,8 @@ namespace Breakdawn.Unity
 
             pool.Release(0);
             _pools.Remove(name);
+            ResourceManager.Instance.RecycleAsset(asset, isCache);
+            _rawAsset.Remove(name);
         }
 
         private void CheckInit()

@@ -30,7 +30,7 @@ namespace Breakdawn.Test
             }
             else if (Input.GetKeyDown(KeyCode.S))
             {
-                ObjectManager.Instance.DestroyPool("Assets/Prefabs/Cube.prefab");
+                ObjectManager.Instance.DestroyPool("Assets/Prefabs/Cube.prefab", true);
             }
         }
     }

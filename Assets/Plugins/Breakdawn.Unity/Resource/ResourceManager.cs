@@ -63,8 +63,9 @@ namespace Breakdawn.Unity
         {
             var asset = GetAssetFromCache(info) ?? new Asset(info);
             _assetDict.Add(info, asset);
-            _objInquiryDict.Add(asset.Resource, asset);
-            return asset.Resource as T;
+            var obj = asset.GetAsset<T>();
+            _objInquiryDict.Add(obj, asset);
+            return obj;
         }
 
         /// <summary>
@@ -78,7 +79,7 @@ namespace Breakdawn.Unity
         {
             var ab = AssetBundleManager.Instance.GetAssetBundle(info, true);
             var resource = isSprite ? ab.LoadAsset<Sprite>(info.assetName) : ab.LoadAsset(info.assetName);
-            if (resource == null)
+            if (!resource)
             {
                 throw new ArgumentException($"无法加载{info}");
             }
@@ -223,7 +224,7 @@ namespace Breakdawn.Unity
         /// <exception cref="ArgumentException">资源未初始化</exception>
         public void RecycleAsset(Object obj, bool isCache)
         {
-            if (obj == null)
+            if (!obj)
             {
                 throw new ArgumentNullException($"回收{obj}不能为null");
             }
@@ -238,7 +239,7 @@ namespace Breakdawn.Unity
 
         private void RecycleAsset(Asset res, bool isCache)
         {
-            res.RefCount--;
+            res.RefCount -= 1;
             if (res.RefCount > 0)
             {
                 return;
@@ -298,7 +299,7 @@ namespace Breakdawn.Unity
         private void AddAssetToDict(AssetInfo info, Asset asset)
         {
             _assetDict.Add(info, asset);
-            _objInquiryDict.Add(asset.Resource, asset);
+            _objInquiryDict.Add(asset.resource, asset);
         }
 
         public void WashOut()
