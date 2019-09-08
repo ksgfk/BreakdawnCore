@@ -1,33 +1,70 @@
-﻿using System;
+﻿/**
+ * MIT License
+ *
+ * Copyright (c) 2017 Unity Community
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 using UnityEngine;
 
 namespace Breakdawn.Unity
 {
-    public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoBehaviour
+    /// <summary>
+    /// 感谢UnityCommunity的开源代码:https://github.com/UnityCommunity/UnitySingleton
+    /// </summary>
+    public abstract class MonoSingleton<T> : MonoBehaviour where T : Component
     {
-        public static T Instance { get; private set; }
+        private static T _instance;
 
-        protected void InitInstance()
+        public static T Instance
         {
-            if (Instance != null)
+            get
             {
-                Debug.LogWarning($"单例类{typeof(T).FullName}已经初始化过了,不需要重复初始化");
-                return;
-            }
+                if (_instance)
+                {
+                    return _instance;
+                }
 
-            if (this is T singleton)
-            {
-                Instance = singleton;
-            }
-            else
-            {
-                throw new ArgumentException($"单例类{typeof(T).FullName}类型错误");
+                _instance = FindObjectOfType<T>();
+                if (_instance)
+                {
+                    return _instance;
+                }
+
+                var obj = new GameObject {name = typeof(T).Name};
+                _instance = obj.AddComponent<T>();
+                return _instance;
             }
         }
 
-        protected void DisposeInstance()
+        protected virtual void Awake()
         {
-            Instance = null;
+            if (!_instance)
+            {
+                _instance = this as T;
+                DontDestroyOnLoad(gameObject);
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
         }
     }
 }

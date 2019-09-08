@@ -1,7 +1,6 @@
 using System;
 using JetBrains.Annotations;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace Breakdawn.Unity
 {
@@ -19,7 +18,7 @@ namespace Breakdawn.Unity
         {
             get
             {
-                if (!resource)
+                if (resource)
                 {
                     return 1;
                 }
@@ -30,24 +29,6 @@ namespace Breakdawn.Unity
 
         public string AssetName => Info.assetName;
         internal AssetBundleRequest Request { get; set; }
-
-        internal virtual Object Resource
-        {
-            get
-            {
-                if (resource)
-                {
-                    return resource;
-                }
-
-                if (Request == null)
-                {
-                    return null;
-                }
-
-                return Request.isDone ? Request.asset : null;
-            }
-        }
 
         public AssetAsync(AssetInfo info) : base(info)
         {

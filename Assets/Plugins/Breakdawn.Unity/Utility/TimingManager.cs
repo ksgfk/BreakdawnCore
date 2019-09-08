@@ -12,9 +12,8 @@ namespace Breakdawn.Unity
         private readonly Timing _timing = new Timing();
         private readonly ConcurrentQueue<(Action<Guid>, Guid)> _queue = new ConcurrentQueue<(Action<Guid>, Guid)>();
 
-        private void Awake()
+        protected override void Awake()
         {
-            InitInstance();
             _timing.TaskHandler += (act, id) => _queue.Enqueue((act, id));
             _timing.Start();
         }
@@ -37,7 +36,6 @@ namespace Breakdawn.Unity
 
         private void OnDestroy()
         {
-            DisposeInstance();
             _timing.Close();
         }
 

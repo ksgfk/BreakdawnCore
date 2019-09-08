@@ -18,10 +18,10 @@ namespace Breakdawn.Test
         {
             if (Input.GetKeyDown(KeyCode.F))
             {
-                var go = ObjectManager.Instance.Get("Assets/Prefabs/Cube.prefab");
-                go.transform.position = new Vector3(Mathf.PerlinNoise(Time.time, 0) * 5,
+                var go = ObjectManager.Instance.Get("Assets/Prefabs/Attack.prefab");
+                go.transform.position = new Vector3(Mathf.PerlinNoise(Time.time, 0) * 15,
                     Mathf.PerlinNoise(Time.time, 0) * 5,
-                    Mathf.PerlinNoise(Time.time, 0) * 5);
+                    Mathf.PerlinNoise(Time.time, 0) * 15);
                 _obj.Enqueue(go);
             }
             else if (Input.GetKeyDown(KeyCode.D))
@@ -30,7 +30,7 @@ namespace Breakdawn.Test
             }
             else if (Input.GetKeyDown(KeyCode.S))
             {
-                ObjectManager.Instance.DestroyPool("Assets/Prefabs/Cube.prefab", true);
+                ObjectManager.Instance.DestroyPool("Assets/Prefabs/Attack.prefab", false);
             }
         }
     }

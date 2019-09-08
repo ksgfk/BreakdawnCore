@@ -26,7 +26,7 @@ namespace Breakdawn.Unity
     }
 
     /// <summary>
-    /// TODO:异步
+    /// TODO:感觉只有Instantiate一大堆GO的时候才需要异步，就先不写了QwQ
     /// </summary>
     public class ObjectManager : Singleton<ObjectManager>
     {
@@ -64,7 +64,7 @@ namespace Breakdawn.Unity
         }
 
         /// <summary>
-        /// 创建对象池
+        /// 创建对象池，若资源管理内无对应资源则同步加载。
         /// </summary>
         /// <param name="name">对象完整名称</param>
         /// <param name="count">初始化数量</param>
