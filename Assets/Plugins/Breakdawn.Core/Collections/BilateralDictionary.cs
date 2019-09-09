@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 
 namespace Breakdawn.Core
 {
@@ -15,7 +14,7 @@ namespace Breakdawn.Core
 
         public int Count => _kToV.Count == _vTok.Count
             ? _kToV.Count
-            : throw new InvalidDataException($"双向字典数据不一致，kToV:{_kToV.Count}，vToK:{_vTok.Count}");
+            : throw new InvalidOperationException($"双向字典数据不一致，kToV:{_kToV.Count}，vToK:{_vTok.Count}");
 
         public bool IsReadOnly => false;
 
@@ -31,7 +30,7 @@ namespace Breakdawn.Core
             {
                 if (!TryAdd(pair.Key, pair.Value))
                 {
-                    throw new InvalidDataException($"重复的键值对:{pair.ToString()}");
+                    throw new InvalidOperationException($"重复的键值对:{pair.ToString()}");
                 }
             }
         }
@@ -90,7 +89,7 @@ namespace Breakdawn.Core
         bool ICollection<KeyValuePair<TK1, TK2>>.Remove(KeyValuePair<TK1, TK2> item)
         {
             var c = this as ICollection<KeyValuePair<TK1, TK2>>;
-            return c.Contains(item) && Remove(item.Key);
+            return c.Contains(item) && RemoveKey(item.Key);
         }
 
         void IDictionary<TK1, TK2>.Add(TK1 key, TK2 value)
@@ -111,55 +110,44 @@ namespace Breakdawn.Core
             return _vTok.ContainsKey(value) && _kToV.ContainsValue(value);
         }
 
-        public bool Remove(TK1 key)
+        bool IDictionary<TK1, TK2>.Remove(TK1 key)
         {
-            if (!ContainsKey(key))
-            {
-                return false;
-            }
+            return RemoveKey(key);
+        }
 
-            if (!_kToV.TryGetValue(key, out var value))
-            {
-                throw new InvalidOperationException();
-            }
-
-            if (!_kToV.Remove(key))
-            {
-                return false;
-            }
-
-            if (_vTok.Remove(value))
-            {
-                return true;
-            }
-
-            _kToV.Add(key, value);
-            return false;
+        public bool RemoveKey(TK1 key)
+        {
+            return RemoveFromDictionaries(key, _kToV, _vTok);
         }
 
         public bool RemoveValue(TK2 value)
         {
-            if (!ContainsValue(value))
+            return RemoveFromDictionaries(value, _vTok, _kToV);
+        }
+
+        private static bool RemoveFromDictionaries<TK, TV>(TK item, Dictionary<TK, TV> kv, Dictionary<TV, TK> vk)
+        {
+            if (!kv.TryGetValue(item, out var v))
             {
                 return false;
             }
 
-            if (!_vTok.TryGetValue(value, out var key))
-            {
-                throw new InvalidOperationException();
-            }
-
-            if (!_vTok.Remove(value))
+            if (!vk.ContainsValue(item))
             {
                 return false;
             }
 
-            if (_kToV.Remove(key))
+            if (!kv.Remove(item))
+            {
+                return false;
+            }
+
+            if (vk.Remove(v))
             {
                 return true;
             }
 
-            _vTok.Add(value, key);
+            kv.Add(item, v);
             return false;
         }
 

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<ExportAssetPackageConfig xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" targetPath="E:/ProjectUnity/BreakdawnCore/Build" packageName="BreakdawnCore" suffix="0.0.5.1">
+<ExportAssetPackageConfig xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" targetPath="E:/ProjectUnity/BreakdawnCore/Build" packageName="BreakdawnCore" suffix="0.0.5.2">
   <exportPaths>
     <string>Assets/Plugins/Breakdawn.Core</string>
     <string>Assets/Plugins/Breakdawn.Unity</string>
