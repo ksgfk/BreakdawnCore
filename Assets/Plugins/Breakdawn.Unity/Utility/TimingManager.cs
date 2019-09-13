@@ -14,6 +14,7 @@ namespace Breakdawn.Unity
 
         protected override void Awake()
         {
+            base.Awake();
             _timing.TaskHandler += (act, id) => _queue.Enqueue((act, id));
             _timing.Start();
         }
