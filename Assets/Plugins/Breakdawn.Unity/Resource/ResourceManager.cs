@@ -131,22 +131,24 @@ namespace Breakdawn.Unity
                 }
 
                 yield return process.Request;
-                _asyncInquiryDict.Remove(process.Info);
-                AddAssetToDict(process.Info, process);
-
                 process.resource = process.Request.asset;
+                _asyncInquiryDict.Remove(process.Info);
+
                 process.isDone = true;
                 process.Request = null;
                 process.LastUseTime = DateTime.Now;
-                foreach (var callback in process.callbacks.GetInvocationList())
+                if (process.callbacks != null)
                 {
-                    if (callback is LoadComplete complete)
+                    foreach (var callback in process.callbacks.GetInvocationList())
                     {
-                        complete(process);
-                    }
-                    else
-                    {
-                        throw new InvalidCastException("回调方法类型错误");
+                        if (callback is LoadComplete complete)
+                        {
+                            complete(process);
+                        }
+                        else
+                        {
+                            throw new InvalidCastException("回调方法类型错误");
+                        }
                     }
                 }
 
