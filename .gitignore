@@ -53,6 +53,15 @@ Build/
 .idea/
 Assets/Models/
 Assets/Sounds/
-Assets/Shaders/
+Assets/Shaders/benghuai.shader
+Assets/Shaders/cloud.shader
+Assets/Shaders/Skybox.shader
+Assets/Shaders/Water.shader
+Assets/Shaders/Xray.shader
+Assets/Shaders/benghuai.shader.meta
+Assets/Shaders/cloud.shader.meta
+Assets/Shaders/Skybox.shader.meta
+Assets/Shaders/Water.shader.meta
+Assets/Shaders/Xray.shader.meta
 Assets/Prefabs/
 Assets/StreamingAssets/
