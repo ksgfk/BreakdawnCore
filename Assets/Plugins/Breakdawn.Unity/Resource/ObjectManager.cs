@@ -60,7 +60,18 @@ namespace Breakdawn.Unity
         /// <param name="count">初始化数量</param>
         public ObjectPool<GameObject> CreatePool(string name, int count)
         {
-            return CreatePool(name, count, go => go.Show(), go => go.Hide(), Object.Destroy);
+            return CreatePool(name, count, null);
+        }
+
+        /// <summary>
+        /// 创建对象池
+        /// </summary>
+        /// <param name="name">对象完整名称</param>
+        /// <param name="count">初始化数量</param>
+        /// <param name="onInit">初始化时调用</param>
+        public ObjectPool<GameObject> CreatePool(string name, int count, Action<GameObject> onInit)
+        {
+            return CreatePool(name, count, onInit, go => go.Show(), go => go.Hide(), Object.Destroy);
         }
 
         /// <summary>
@@ -68,12 +79,16 @@ namespace Breakdawn.Unity
         /// </summary>
         /// <param name="name">对象完整名称</param>
         /// <param name="count">初始化数量</param>
+        /// <param name="onInit">初始化时调用</param>
         /// <param name="onGet">获取对象时触发事件</param>
         /// <param name="onRecycle">回收对象时触发事件</param>
         /// <param name="onRelease">释放对象时触发事件</param>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="ArgumentNullException">无资源</exception>
-        public ObjectPool<GameObject> CreatePool(string name, int count, Action<GameObject> onGet,
+        public ObjectPool<GameObject> CreatePool(string name,
+            int count,
+            Action<GameObject> onInit,
+            Action<GameObject> onGet,
             Action<GameObject> onRecycle,
             Action<GameObject> onRelease)
         {
@@ -99,6 +114,7 @@ namespace Breakdawn.Unity
             {
                 var obj = Object.Instantiate(_rawAsset[name], _poolGo.transform).Hide();
                 _objQueryDict.Add(obj, new CacheObjectInfo(obj, name, false));
+                onInit?.Invoke(obj);
                 return obj;
             }, count);
             pool.OnGetObject += onGet;

@@ -1,5 +1,6 @@
 ﻿using Breakdawn.Unity;
 using NUnit.Framework;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace Breakdawn.Tests
@@ -15,6 +16,15 @@ namespace Breakdawn.Tests
 
             a = a.CoordinateRotateDegree(45);
             Debug.Log($"({a.x},{a.y})");
+        }
+
+        [Test]
+        public void TestMatrix()
+        {
+            var a = new float3x2(1, 2, 1, 2, 2, 1);
+            var b = new float2x3(2, 2, 1, 3, 1, 2);
+            var c = math.mul(a, b);
+            Debug.Log($"{c}");
         }
     }
 }

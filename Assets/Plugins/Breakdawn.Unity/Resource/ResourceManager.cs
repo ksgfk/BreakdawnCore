@@ -212,7 +212,11 @@ namespace Breakdawn.Unity
 
         public AssetAsync CacheAsync(string name)
         {
-            return GetAssetAsync(name, asset => RecycleAsset(asset.GetAsset<Object>(), true));
+            return GetAssetAsync(name, asset =>
+            {
+                AddAssetToDict(asset.Info, asset);
+                RecycleAsset(asset.GetAsset<Object>(), true);
+            });
         }
 
         #endregion

@@ -1,14 +1,11 @@
 ﻿using System.Runtime.CompilerServices;
-#if UNITY_2019
 using Unity.Mathematics;
-#endif
 using UnityEngine;
 
 namespace Breakdawn.Unity
 {
     public static class VectorExtension
     {
-#if UNITY_2019
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2 RotateDegree(float degrees, float x, float y)
         {
@@ -104,6 +101,5 @@ namespace Breakdawn.Unity
         {
             return CoordinateRotateRadian(angle, v.x, v.y);
         }
-#endif
     }
 }
