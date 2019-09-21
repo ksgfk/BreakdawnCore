@@ -20,5 +20,10 @@ namespace Breakdawn.Core
             value = queue.Dequeue();
             return true;
         }
+
+        public static bool IsEmpty<T>(this LinkedList<T> linkedList)
+        {
+            return linkedList.Count == 0;
+        }
     }
 }

@@ -61,10 +61,11 @@ namespace Breakdawn.Unity
                 _instance = this as T;
                 DontDestroyOnLoad(gameObject);
             }
-            else
-            {
-                Destroy(gameObject);
-            }
+
+//            else
+//            {
+//                Destroy(gameObject);
+//            }
         }
     }
 }
