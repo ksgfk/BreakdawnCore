@@ -11,10 +11,16 @@ namespace Breakdawn.Tests
         public void TestRotate()
         {
             var a = new Vector2(1, 0);
-            a = a.RotateDegree(45);
+            a = a.RotateDegree(90);
             Debug.Log($"({a.x},{a.y})");
 
-            a = a.CoordinateRotateDegree(45);
+            a = a.RotateDegree(-90);
+            Debug.Log($"({a.x},{a.y})");
+
+            a = a.RotateRadian(math.PI / 2);
+            Debug.Log($"({a.x},{a.y})");
+
+            a = a.CoordinateRotateDegree(90);
             Debug.Log($"({a.x},{a.y})");
         }
 
@@ -25,6 +31,14 @@ namespace Breakdawn.Tests
             var b = new float2x3(2, 2, 1, 3, 1, 2);
             var c = math.mul(a, b);
             Debug.Log($"{c}");
+        }
+
+        [Test]
+        public void TestRotateV3()
+        {
+            var a = new Vector3(1, 0, 0);
+            a = VectorExtension.RotateDegree(90, a, Vector3.forward);
+            Debug.Log($"({a.x},{a.y},{a.z})");
         }
     }
 }
