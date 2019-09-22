@@ -37,8 +37,23 @@ namespace Breakdawn.Tests
         public void TestRotateV3()
         {
             var a = new Vector3(1, 0, 0);
-            a = VectorExtension.RotateDegree(90, a, Vector3.forward);
+            a = a.RotateDegree(90, new Vector3(0, 1, 0));
             Debug.Log($"({a.x},{a.y},{a.z})");
+        }
+
+        [Test]
+        public void TestProjection()
+        {
+            var a = new Vector2(0.5F, 1);
+            a = VectorExtension.Projection(a, new Vector2(1, 1));
+            Debug.Log($"({a.x},{a.y})");
+
+            var b = new Vector2(0.5F, 1);
+            b = VectorExtension.Reflection(b, new Vector2(1, -1));
+            Debug.Log($"({b.x},{b.y})");
+
+            var c = new float3(0, 0, 1);
+            Debug.Log(VectorExtension.Projection(c, new float3(1, 1, 1)));
         }
     }
 }
